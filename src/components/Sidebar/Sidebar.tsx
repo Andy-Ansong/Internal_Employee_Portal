@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
                 </NavLink>
             </div>
             <div className='bottom'>
-                <NavLink className='nav-item' to='team'>
+                <NavLink className='nav-item' to='profile'>
                     <IoPersonCircle />
                     <h3>Profile</h3>
                 </NavLink>
