@@ -1,0 +1,81 @@
+.staff{
+    display: grid;
+    height: calc(100vh - 40px);
+    ::-webkit-scrollbar{
+        width: 5px;
+        background-color: transparent;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgb(255, 99, 99);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgb(255, 174, 144);
+    }
+    h1{
+        font-size: 2.3em;
+        position: relative;
+        bottom: 5px;
+    }
+    .sort-list{
+        display: grid;
+        padding: 5px;
+        border-radius: 5px;
+        align-items: center;
+        gap: 5px;
+        grid-template-columns: 55px repeat(3, 1fr) 65px;
+        margin-bottom: 5px;
+        .sort-item{
+            cursor: pointer;
+            width: min-content;
+        }
+    }
+    .staff-list{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: scroll;
+        padding: 5px;
+        .employee-list-item{
+            display: grid;
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+            align-items: center;
+            gap: 5px;
+            grid-template-columns: 55px repeat(3, 1fr) 65px;
+            &:hover{
+                box-shadow: 0 0 5px #0005;
+            }
+            .image-container{
+                overflow:hidden;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                img{
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+            h3,h4,a{
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            h3{
+                font-size: 1em;
+                font-weight: 500;
+            }
+            h4{
+                font-size: 1em;
+                font-weight: 400;
+            }
+            button{
+                padding: 7.5px 4px;
+                border-radius: 5px;
+                background-color: #db4813dd;
+                border: none;
+                color: white;
+            }
+        }
+    }
+}

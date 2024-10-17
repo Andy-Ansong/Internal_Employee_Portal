@@ -1,0 +1,59 @@
+.page{
+  display: grid;
+  grid-template-columns: 250px auto;
+  .left{
+    height: 100vh;
+  }
+  .right{
+    margin: 10px;
+    padding: 10px;
+    background-color: #ff6a0028;
+    border-radius: 10px;
+    &:hover{
+      box-shadow: 0 0 5px #0007;
+    }
+    .pagination-nav{
+      position: relative;
+      top: 5px;
+      padding: 10px 0;
+      display: grid;
+      place-items: center;
+      .pagination{
+        list-style: none;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        .page-icon{
+          position: relative;
+          top: 2.5px;
+          &:hover{
+            color: rgb(255, 114, 63);
+          }
+        }
+        .page-link{
+          width: 25px;
+          text-align: center;
+          border-radius: 50%;
+          height: 25px;
+          background-color: orangered;
+          cursor: pointer;
+          &:hover{
+            background-color: rgb(255, 114, 63);
+            color: white;
+          }
+        }
+        .disabled{
+          color: rgba(0, 0, 0, 0.563);
+          cursor:pointer;
+          &:hover{
+            color: rgba(0, 0, 0, 0.563);
+            background-color: transparent;
+          }
+        }
+        .current-page{
+          color: white;
+        }
+      }
+    }
+  }
+}
