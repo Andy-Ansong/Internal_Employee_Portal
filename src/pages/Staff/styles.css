@@ -5,6 +5,7 @@
         width: 5px;
         background-color: transparent;
     }
+    grid-template-rows: repeat(3, auto) 1fr auto;
     ::-webkit-scrollbar-track {
         background: rgb(255, 99, 99);
     }

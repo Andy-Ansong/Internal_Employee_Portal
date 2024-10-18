@@ -3,7 +3,10 @@ import { IoIosArrowDropleftCircle, IoIosArrowDroprightCircle } from 'react-icons
 
 interface Props{
     total: number,
-    currentPage: number
+    currentPage: number,
+    changePage: () => void,
+    nextPage: () => void,
+    prevPage: () => void
 }
 
 const Pagination: React.FC<Props> = (props) => {

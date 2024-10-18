@@ -92,7 +92,7 @@ const Profile: React.FC = () => {
                             isOpen == "skills" &&
                             <div className="skills">
                                 <ul>
-                                    {Array.from({length: 5}).fill('44').map((skill, index) => (
+                                    {Array.from({length: 5}).fill('44').map((_, index) => (
                                         <li key={index}>Skill</li>
                                     ))}
                                 </ul>
