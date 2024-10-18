@@ -43,18 +43,19 @@ const CreateEmployee: React.FC<Props> = (props) => {
             WorkSchedule, Team
         }
         console.log(data)
-        // axios.post(`http://localhost:3030/api/v1/employees`, data,
-        //     {
-        //         headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
-        //     },
-        // ).then(res => {
-        //     console.log(res)
-        // }).catch(err => {
-        //     if(err.status === 401)
-        //         <Navigate to='auth'/>
-        //     setError(err.response.data.message)
-        // })
-        // props.fetchPage()
+        axios.post(`http://localhost:3030/api/v1/employees`, data,
+            {
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+            },
+        ).then(res => {
+            console.log(res)
+        }).catch(err => {
+            if(err.status === 401)
+                <Navigate to='auth'/>
+            setError(err.response.data.message)
+            console.log(error)
+        })
+        props.fetchPage()
     }
 
     return (
