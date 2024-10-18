@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
                 </NavLink>
                 <NavLink className='nav-item' to='staff'>
                     <BsFillBuildingFill />
-                    <h3>Staff</h3>
+                    <h3>Employees</h3>
                 </NavLink>
                 <NavLink className='nav-item' to='team'>
                     <IoPeopleCircle />

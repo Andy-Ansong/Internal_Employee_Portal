@@ -17,6 +17,18 @@
         position: relative;
         bottom: 5px;
     }
+    .top{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        button{
+            padding: 7.5px 4px;
+            border-radius: 5px;
+            background-color: #db4813dd;
+            border: none;
+            color: white;
+        }
+    }
     .sort-list{
         display: grid;
         padding: 5px;

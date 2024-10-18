@@ -4,21 +4,38 @@ import Pagination from '../../components/Pagination/Pagination'
 import { Employee } from '../../model/Employee'
 import axios from 'axios'
 import { Navigate } from 'react-router-dom'
+import CreateEmployee from '../../components/Forms/CreateEmployee'
 
 const Staff: React.FC = () => {
     const [employees, setEmployees] = useState<Array<Employee>|[]>([])
     const [total, setTotal] = useState<number>(0)
     const [page, setPage] = useState<number>(0)
     const [error, setError] = useState<string>("")
+    const limit = 10
 
     useEffect(() => {
         const page = 1
-        axios.get(`http://localhost:3030/api/v1/employees?page=${page}`,
+        axios.get(`http://localhost:3030/api/v1/employees?page=${page}&limit=${limit}`,
+            {
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+            }
+            ).then(res => {
+                setEmployees(res.data.employees)
+                setTotal(res.data.total | 0)
+                setPage(res.data.page | 0)
+            }).catch(err => {
+                if(err.status === 401)
+                    <Navigate to='auth'/>
+                setError(err.response.data.message)
+            })
+    }, [])
+
+    const fetchPage = (pageNo:number) => {
+        axios.get(`http://localhost:3030/api/v1/employees?page=${pageNo}&limit=${limit}`,
             {
                 headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
             }
         ).then(res => {
-            console.log(res.data)
             setEmployees(res.data.employees)
             setTotal(res.data.total | 0)
             setPage(res.data.page | 0)
@@ -27,16 +44,29 @@ const Staff: React.FC = () => {
                 <Navigate to='auth'/>
             setError(err.response.data.message)
         })
-    }, [])
+    }
 
-    const handleNext = () => {}
-    const handlePrev = () => {}
-    const handlePage = () => {}
+    const handleNext = () => {
+        if((page * limit) + limit <= total)
+            fetchPage(page + 1)
+    }
+    const handlePrev = () => {
+        if(page > 1)
+            fetchPage(page - 1)
+    }
+    const handlePage = (pageNo: number) => {
+        if(pageNo != page)
+            fetchPage(pageNo)
+    }
 
     return (
         <div className='staff'>
-            <h1>Staff</h1>
-            <h3>Total: {total}</h3>
+            <h1>Employees</h1>
+            <CreateEmployee fetchPage={() => {fetchPage(page)}}/>
+            <div className='top'>
+                <h3>Total: {total}</h3>
+                <button>Add+</button>
+            </div>
             {
                 employees.length > 0?
                 <>
@@ -52,7 +82,7 @@ const Staff: React.FC = () => {
                                 <div className='employee-list-item' key={index}>
                                     <div className='image-container'>
                                         <img
-                                            src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAqAMBIgACEQEDEQH/xAAaAAEAAwEBAQAAAAAAAAAAAAAAAwQFAQIH/8QAKxABAAIBAwMCBQQDAAAAAAAAAAECAwQRURIhMTJBBSNhkbFicXKBIjRS/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAWEQEBAQAAAAAAAAAAAAAAAAAAARH/2gAMAwEAAhEDEQA/APqgCoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADrgAAAAAAAAAAAAAAAABMxEbz4GbqtTOWZrXtj45BYza2le2OOuefZUyajLk83nbiOyIMHeq3/U/d6rmyV9OS0f28Bgt4dbaLfO715iF6lotXqrO8csZLpc04cn6Z7SDVCPp4AAAAAAAAAAAHXAEepv0YLW99toZLQ+IT8mkfqZ6wAAAAD2CCjXwW68NLcw9odHO+np9I2TIAAAAAAAAAAAAKvxCN8NZ4sz134heY2x7RtMb7qSwAAAAACjS0P8Ar1/v8rCpoMk2pasxH+PhcQcAAAAAAAAAAJ8ACj8Sj/Kk/SYU2lrMVsmKIpG81tuzZiYmYntPCwAAAAAdrWbTERG8z4KLvw6Pl3nmYXEWlxzjwVraNreZSoAAAAAAAAAAAADK1VOjUXjmd2qra3D14+uPVWPvAM4BQAAWNBWZz9XtWFdp6LH0YYmfNu8lE8eAEAAAAAAAAAAAAB4zz8m/8Z/DuS8Y6Ta3iFDPq7ZYmtYitJ+8gqx4dBQAA9mvgn5NP4x+GQs4NXbFWK2iJrH3go0R5x3jJSLV8S9IAAAAAAAAAhy6nFina1t54jur319p9FNv3kF5Dl1WPH2meqeIZ+TPkyeq87ceEZgnz6m+aJie1eIQAoAAAAAAnwam+GIiO9eJXcWqx5O0T0zxLLEwbQycefJj9N5248rFNfaPXTf9pMF4Q4tTiyztW208T2TAAAK2tyWpjiKzt1eZAGcAQAFAAAAAAAAAAAABo6LJa+OYtO/T4kEFkAH/2Q=="
+                                            src={employee.image}
                                         />
                                     </div>
                                     <h3>{employee.name}</h3>
@@ -70,7 +100,7 @@ const Staff: React.FC = () => {
             <Pagination
                 currentPage={page} changePage={handlePage}
                 nextPage={handleNext} prevPage={handlePrev}
-                total={total}/>
+                total={total} limit={limit}/>
         </div>
     )
 }

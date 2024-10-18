@@ -19,6 +19,11 @@
       display: grid;
       place-items: center;
       .pagination{
+        button{
+          border: none;
+          background-color: transparent;
+          box-shadow: none;
+        }
         list-style: none;
         display: flex;
         gap: 5px;
@@ -45,6 +50,7 @@
         .disabled{
           color: rgba(0, 0, 0, 0.563);
           cursor:pointer;
+          pointer-events: none;
           &:hover{
             color: rgba(0, 0, 0, 0.563);
             background-color: transparent;
@@ -52,6 +58,7 @@
         }
         .current-page{
           color: white;
+          pointer-events: none;
         }
       }
     }

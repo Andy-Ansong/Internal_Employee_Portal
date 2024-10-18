@@ -23,6 +23,11 @@ const AuthCard: React.FC<Props> = (props) => {
             inputRef.current.focus()
     }, [])
 
+    const handleFormSubmit = async (e: HTMLFormElement) => {
+        e.preventDefault()
+        handleSubmit()
+    }
+
     const handleSubmit = async () => {
         if(!data){
             setError(`Please enter your ${props.data == "email" ? "email" : "otp code"}`)
@@ -39,7 +44,7 @@ const AuthCard: React.FC<Props> = (props) => {
         <div className='authCard'>
             {props.icon}
             <h1>{props.title}</h1>
-            <div className='form'>
+            <form className='form' onSubmit={() => handleFormSubmit}>
                 <input value={data}
                     onChange={(e) => setData(e.target.value)}
                     required ref={inputRef}
@@ -59,7 +64,7 @@ const AuthCard: React.FC<Props> = (props) => {
                         props.buttontxt
                     }
                 </button>
-            </div>
+            </form>
             <p>{props.description}</p>
         </div>
     )
