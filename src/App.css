@@ -57,3 +57,21 @@
     }
   }
 }
+.button-loader {
+  background-color: transparent;
+  border: 5px solid #fd750e;
+  border-radius: 50%;
+  border-top: 5px solid rgb(233, 78, 22);
+  padding: 4.5px;
+  width: min-content;
+  animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
 import './styles.css'
 
 interface Props{
@@ -9,10 +8,14 @@ interface Props{
     buttonRedirect: string,
     description: string,
     data: string,
-    placeholder: string
+    placeholder: string,
+    function: (value:string) => Promise<string>
 }
 
 const AuthCard: React.FC<Props> = (props) => {
+    const [data, setData] = useState<string>('')
+    const [error, setError] = useState<string>('')
+    const [isloading, setIsLoading] = useState<boolean>(false)
     const inputRef = useRef<HTMLInputElement|null>(null)
 
     useEffect(() => {
@@ -20,15 +23,42 @@ const AuthCard: React.FC<Props> = (props) => {
             inputRef.current.focus()
     }, [])
 
+    const handleSubmit = async () => {
+        if(!data){
+            setError(`Please enter your ${props.data == "email" ? "email" : "otp code"}`)
+            return
+        }
+        setIsLoading(true)
+        const status = await props.function(data)
+        if(status != "completed")
+            setError(status)
+        setIsLoading(false)
+    }
+
     return (
         <div className='authCard'>
             {props.icon}
             <h1>{props.title}</h1>
-            <div>
-                <input ref={inputRef} type={props.data == "email" ? "email" : "text"} name={props.data} id={props.data} placeholder={props.placeholder} /><br/>
-                <Link to={props.buttonRedirect}>
-                    <button type="submit">{props.buttontxt}</button>
-                </Link>
+            <div className='form'>
+                <input value={data}
+                    onChange={(e) => setData(e.target.value)}
+                    required ref={inputRef}
+                    type={props.data == "email" ? "email" : "text"}
+                    name={props.data} id={props.data}
+                    placeholder={props.placeholder}
+                />
+                {
+                    error &&
+                    <p className='error'>{error}</p>
+                }
+                <br/>
+                <button onClick={handleSubmit} type="submit">
+                    {
+                        isloading ?
+                        <div className='button-loader'></div>:
+                        props.buttontxt
+                    }
+                </button>
             </div>
             <p>{props.description}</p>
         </div>

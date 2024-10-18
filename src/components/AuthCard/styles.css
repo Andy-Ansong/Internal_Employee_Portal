@@ -9,6 +9,7 @@
     height: 400px;
     width: 350px;
     background-color: white;
+    position: relative;
     svg{
         color: #db4813dd;
     }
@@ -21,7 +22,7 @@
         text-align: center;
         margin-bottom: 20px;
     }
-    div{
+    .form{
         margin: 30px 0 20px 0;
         width: 100%;
         input{
@@ -35,11 +36,17 @@
         button{
             width: 100%;
             padding: 7px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
             font-size: 1em;
             background-color: #db4813dd;
             color: #fff;
             border: none;
             border-radius: 5px;
+            &:hover{
+                opacity: .8;
+            }
         }
     }
 }

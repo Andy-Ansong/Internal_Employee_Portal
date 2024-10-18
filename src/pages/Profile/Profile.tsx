@@ -1,46 +1,123 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import './style.css'
+import axios, { AxiosResponse } from 'axios'
+import { Employee } from '../../model/Employee'
+import { Navigate } from 'react-router-dom'
 
 const Profile: React.FC = () => {
-    return (
-        <div className='profile'>
-            <div className='profile-card'>
-                <h1>Personal file</h1>
-                <div className='personal'>
-                    <div className='image-button'>
-                        <div>
-                            <div>
-                            <img
-                                src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAqAMBIgACEQEDEQH/xAAaAAEAAwEBAQAAAAAAAAAAAAAAAwQFAQIH/8QAKxABAAIBAwMCBQQDAAAAAAAAAAECAwQRURIhMTJBBSNhkbFicXKBIjRS/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAWEQEBAQAAAAAAAAAAAAAAAAAAARH/2gAMAwEAAhEDEQA/APqgCoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADrgAAAAAAAAAAAAAAAABMxEbz4GbqtTOWZrXtj45BYza2le2OOuefZUyajLk83nbiOyIMHeq3/U/d6rmyV9OS0f28Bgt4dbaLfO715iF6lotXqrO8csZLpc04cn6Z7SDVCPp4AAAAAAAAAAAHXAEepv0YLW99toZLQ+IT8mkfqZ6wAAAAD2CCjXwW68NLcw9odHO+np9I2TIAAAAAAAAAAAAKvxCN8NZ4sz134heY2x7RtMb7qSwAAAAACjS0P8Ar1/v8rCpoMk2pasxH+PhcQcAAAAAAAAAAJ8ACj8Sj/Kk/SYU2lrMVsmKIpG81tuzZiYmYntPCwAAAAAdrWbTERG8z4KLvw6Pl3nmYXEWlxzjwVraNreZSoAAAAAAAAAAAADK1VOjUXjmd2qra3D14+uPVWPvAM4BQAAWNBWZz9XtWFdp6LH0YYmfNu8lE8eAEAAAAAAAAAAAAB4zz8m/8Z/DuS8Y6Ta3iFDPq7ZYmtYitJ+8gqx4dBQAA9mvgn5NP4x+GQs4NXbFWK2iJrH3go0R5x3jJSLV8S9IAAAAAAAAAhy6nFina1t54jur319p9FNv3kF5Dl1WPH2meqeIZ+TPkyeq87ceEZgnz6m+aJie1eIQAoAAAAAAnwam+GIiO9eJXcWqx5O0T0zxLLEwbQycefJj9N5248rFNfaPXTf9pMF4Q4tTiyztW208T2TAAAK2tyWpjiKzt1eZAGcAQAFAAAAAAAAAAAABo6LJa+OYtO/T4kEFkAH/2Q=="
-                            />
-                            </div>
-                        </div>
-                        <div>
-                            <h1>John Doe</h1>
-                            <p>Male</p>
-                        </div>
-                        <button>Update</button>
-                    </div>
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptates, rem.
-                    </p>
-                    <div className='personal-details'>
-                        <div>
-                            <h3>Phone number</h3>
-                            <h3>+233123456789</h3>
-                        </div>
-                        <div>
-                            <h3>Email</h3>
-                            <h3>johndoe@amalitechservices.org</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className='profile-card'>
-                <h1>Team info</h1>
-                <div className='team'>
+    const [isOpen, setIsOpen] = useState<string>('personal')
+    const [employee, setEmployee] = useState<Employee|null>(null)
+    const [error, setError] = useState<string>("")
 
+    useEffect(() => {
+        axios.get("http://localhost:3030/api/v1/employees/current", {
+            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+        }).then((res: AxiosResponse) => {
+            setEmployee(res.data.employee)
+        }).catch(err => {
+            if(err.status === 401)
+                <Navigate to='auth'/>
+            setError(err.response.data.message)
+        })
+    }, [])
+
+    const toggleDropdown = (tab: string) => {
+        if(isOpen == tab)
+            tab = ''
+        setIsOpen(tab)
+    }
+
+    return (
+        <div className='profile-page'>
+            {
+                employee ?
+                <>
+                    <div className='profile-card'>
+                        <h1 className='tag' onClick={() => {toggleDropdown('personal')}}>Personal file</h1>
+                        {
+                            isOpen == "personal" &&
+                            <div className='personal'>
+                                <div className='image-button'>
+                                    <div className='image-container'>
+                                        <img
+                                            src={employee.image}
+                                        />
+                                    </div>
+                                    <div>
+                                        <h1>{employee.name}</h1>
+                                        <p>{employee.gender}</p>
+                                    </div>
+                                    <button>Update</button>
+                                </div>
+                                <p className='bio'>
+                                    {employee.bio}
+                                </p>
+                                <div className='personal-details'>
+                                    <div>
+                                        <h3>Phone number</h3>
+                                        <h4>{employee.phoneNumber}</h4>
+                                    </div>
+                                    <div>
+                                        <h3>Email</h3>
+                                            <h4>{employee.email}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div className='profile-card'>
+                        <h1 onClick={() => {toggleDropdown('team')}} className="tag">Team info</h1>
+                        {
+                            isOpen == "team" &&
+                            <div className="team-details-tab">
+                                <div className='image-container'>
+                                    <img src='amalitech_logo.jpg'/>
+                                </div>
+                                <div className='team-details'>
+                                    <h3>Team Name: {employee.Department?.Team?.name}</h3>
+                                    <h4>Role in Team: {employee.Department?.Team?.role}</h4>
+                                    <h4>Team Lead: {employee.Department?.Team?.role}</h4>
+                                    <h4>Current Project: {employee.Department?.Team?.role}</h4>
+                                </div>
+                                <div className='contacts'>
+                                    <button>HR</button>
+                                    <button>Team Lead</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div className='profile-card'>
+                        <h1 onClick={() => {toggleDropdown('skills')}} className="tag">Skills</h1>
+                        {
+                            isOpen == "skills" &&
+                            <div className="skills">
+                                <ul>
+                                    {Array.from({length: 5}).fill('44').map((skill, index) => (
+                                        <li key={index}>Skill</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                    <div className='profile-card'>
+                        <h1 onClick={() => {toggleDropdown('job')}} className="tag">Work Schedule</h1>
+                        {
+                            isOpen == "job" &&
+                            <div className="work-schedule">
+                                {employee.WorkSchedule.map((schedule) => (
+                                    <p key={schedule.day}>
+                                        {schedule.day}: {schedule.type}
+                                    </p>
+                                ))}
+                            </div>
+                        }
+                    </div>
+                </>
+                :
+                <div className="profile-card">
+                    <h1 className='tag'>{error}</h1>
                 </div>
-            </div>
+            }
         </div>
     )
 }
