@@ -18,7 +18,7 @@ const Pagination: React.FC<Props> = (props) => {
                     <IoIosArrowDropleftCircle size={30}/>
                 </button>
                 {
-                    Array.from({length: props.total}).fill("1").map((_, index) => (
+                    Array.from({length: (props.total/props.limit) + 1}).fill("1").map((_, index) => (
                         <button key={index}
                         className={`page-link ${props.currentPage == index+1 ? 'current-page' : ''}`}
                         onClick={() => {props.changePage(index+1)}}>
@@ -26,7 +26,7 @@ const Pagination: React.FC<Props> = (props) => {
                         </button>
                     ))
                 }
-                <button onClick={props.nextPage} className={`page-icon ${(props.currentPage * props.limit) + props.limit > props.total && "disabled"}`}>
+                <button onClick={props.nextPage} className={`page-icon ${props.currentPage >= props.total / props.limit && "disabled"}`}>
                     <IoIosArrowDroprightCircle size={30}/>
                 </button>
             </ul>

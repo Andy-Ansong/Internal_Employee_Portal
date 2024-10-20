@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import './style.css'
 import axios, { AxiosResponse } from 'axios'
 import { Employee } from '../../model/Employee'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const Profile: React.FC = () => {
     const [isOpen, setIsOpen] = useState<string>('personal')
     const [employee, setEmployee] = useState<Employee|null>(null)
     const [error, setError] = useState<string>("")
+    const navigate = useNavigate()
 
     useEffect(() => {
         axios.get("http://localhost:3030/api/v1/employees/current", {
@@ -16,10 +17,10 @@ const Profile: React.FC = () => {
             setEmployee(res.data.employee)
         }).catch(err => {
             if(err.status === 401)
-                <Navigate to='auth'/>
+                navigate('/auth')
             setError(err.response.data.message)
         })
-    }, [])
+    }, [navigate])
 
     const toggleDropdown = (tab: string) => {
         if(isOpen == tab)
@@ -92,8 +93,8 @@ const Profile: React.FC = () => {
                             isOpen == "skills" &&
                             <div className="skills">
                                 <ul>
-                                    {Array.from({length: 5}).fill('44').map((_, index) => (
-                                        <li key={index}>Skill</li>
+                                    {employee.skills.map((skill, index) => (
+                                        <li key={index}>{skill}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -106,7 +107,7 @@ const Profile: React.FC = () => {
                             <div className="work-schedule">
                                 {employee.WorkSchedule.map((schedule) => (
                                     <p key={schedule.day}>
-                                        {schedule.day}: {schedule.type}
+                                        <span>{schedule.day}:</span> {schedule.type}
                                     </p>
                                 ))}
                             </div>

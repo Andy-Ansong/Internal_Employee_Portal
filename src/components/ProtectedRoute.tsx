@@ -1,11 +1,13 @@
 import React from 'react'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 interface Props{
     children: React.ReactNode
 }
 
 const ProtectedRoute:React.FC<Props> = ({children}) => {
+    const navigate = useNavigate()
+    
     const token = localStorage.getItem('token')
     let isExpired = true
     if(token){
@@ -13,7 +15,7 @@ const ProtectedRoute:React.FC<Props> = ({children}) => {
         isExpired = payload.exp < Math.floor(Date.now()/1000)
     }
     if(isExpired)
-        return <Navigate to='auth'/>
+        navigate('/auth')
 
     return children
 }

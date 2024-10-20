@@ -1,0 +1,62 @@
+.dashboard-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      color: #333;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 20px;
+    }
+    
+    .overview-card, .tasks-card, .announcements-card, .analytics-card {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    h2 {
+      font-size: 18px;
+      color: #007bff;
+    }
+    
+    .overview-stats p, .tasks-card ul li, .announcements-card ul li {
+      margin: 10px 0;
+    }
+    
+    .overview-stats strong {
+      color: #333;
+    }
+    
+    .tasks-card ul, .announcements-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .tasks-card ul li, .announcements-card ul li {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .analytics-card .charts {
+      text-align: center;
+      padding: 50px 0;
+      color: #666;
+      background-color: #f1f1f1;
+      border-radius: 5px;
+    }
+  }
+  
+  
+  

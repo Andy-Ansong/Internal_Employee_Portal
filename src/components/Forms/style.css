@@ -1,17 +1,30 @@
 .employee-form{
     position: absolute;
-    right: 0;
+    right: -350px;
     height: calc(100vh - 20px);
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     padding: 5px 20px;
     box-shadow: -5px 0 5px #0002;
-    top: 10px;
     background-color: white;
     overflow-y: scroll;
+    top: -10px;
+    transition: .3s linear;
     z-index: 5;
-    h2{
-        font-size: 2em;
+    width: 300px;
+    .form-headers{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        h2{
+            font-size: 1.8em;
+        }
+        svg{
+            scale: 1.8;
+            cursor: pointer;
+            position: relative;
+            left: 10px;
+        }
     }
     form{
         display: flex;
@@ -31,7 +44,6 @@
                 border-radius: 5px;
                 width: 250px;
             }
-            .work-schedule-inputs{}
         }
         button{
             padding: 5px;
@@ -41,40 +53,53 @@
             border-radius: 5px;
             font-size: 1.1em;
             margin-bottom: 20px;
+            display: grid;
+            place-items: center;
+            height: 30px;
+            .loader{
+                padding: 5px;
+                border: 1px solid black;
+            }
         }
+    }
+    .radio-selection {
+        display: flex;
+        gap: 0;
+        .custom-radio {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            input[type="radio"] {
+                display: none;
+            }
+            .radio-label {
+                padding: 5px;
+                width: 80px;
+                text-align: center;
+                border: none;
+                background-color: #f0f0f0;
+                transition: .2s ease-in;
+            }
+            input[type="radio"]:checked + .radio-label {
+                background-color: #f65b23;
+                color: white;
+            }
+            .left-radio{
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+            .right-radio{
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+        }
+    }
+    .error-message{
+        color: red;
+        width: 250px;
+        text-align: center;
+        text-wrap: wrap;
     }
 }
 
-.radio-selection {
-    display: flex;
-    gap: 0;
-    .custom-radio {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        position: relative;
-        input[type="radio"] {
-            display: none;
-        }
-        .radio-label {
-            padding: 5px;
-            width: 80px;
-            text-align: center;
-            border: none;
-            background-color: #f0f0f0;
-            transition: .2s ease-in;
-        }
-        input[type="radio"]:checked + .radio-label {
-            background-color: #f65b23;
-            color: white;
-        }
-        .left-radio{
-            border-top-left-radius: 10px;
-            border-bottom-left-radius: 10px;
-        }
-        .right-radio{
-            border-top-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-    }
-}

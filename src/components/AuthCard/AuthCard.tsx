@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { FormEvent, useEffect, useRef, useState } from 'react'
 import './styles.css'
 
 interface Props{
@@ -23,7 +23,7 @@ const AuthCard: React.FC<Props> = (props) => {
             inputRef.current.focus()
     }, [])
 
-    const handleFormSubmit = async (e: HTMLFormElement) => {
+    const handleFormSubmit = async (e: FormEvent) => {
         e.preventDefault()
         handleSubmit()
     }
@@ -44,7 +44,7 @@ const AuthCard: React.FC<Props> = (props) => {
         <div className='authCard'>
             {props.icon}
             <h1>{props.title}</h1>
-            <form className='form' onSubmit={() => handleFormSubmit}>
+            <form className='form' onSubmit={(e) => handleFormSubmit(e)}>
                 <input value={data}
                     onChange={(e) => setData(e.target.value)}
                     required ref={inputRef}
@@ -57,7 +57,7 @@ const AuthCard: React.FC<Props> = (props) => {
                     <p className='error'>{error}</p>
                 }
                 <br/>
-                <button onClick={handleSubmit} type="submit">
+                <button type="submit">
                     {
                         isloading ?
                         <div className='button-loader'></div>:

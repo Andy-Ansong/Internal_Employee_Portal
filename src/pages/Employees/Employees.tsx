@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import './styles.css'
 import Pagination from '../../components/Pagination/Pagination'
 import { Employee } from '../../model/Employee'
@@ -7,11 +7,25 @@ import { Navigate } from 'react-router-dom'
 import CreateEmployee from '../../components/Forms/CreateEmployee'
 
 const Staff: React.FC = () => {
+    const [openForm, setOpenForm] = useState<boolean>(false)
+    const formRef = useRef<HTMLDivElement>(null)
     const [employees, setEmployees] = useState<Array<Employee>|[]>([])
     const [total, setTotal] = useState<number>(0)
     const [page, setPage] = useState<number>(0)
     const [error, setError] = useState<string>("")
     const limit = 10
+
+    const handleFormOpen = (state:boolean) => {
+        if(!formRef.current)
+            return
+        setOpenForm(state)
+        console.log(openForm)
+        if(state){
+            formRef.current.style.right = "-20px";
+        }else{
+            formRef.current.style.right = "-350px";
+        }
+    }
 
     useEffect(() => {
         const page = 1
@@ -25,7 +39,7 @@ const Staff: React.FC = () => {
                 setPage(res.data.page | 0)
             }).catch(err => {
                 if(err.status === 401)
-                    <Navigate to='auth'/>
+                    return <Navigate to='/auth'/>
                 setError(err.response.data.message)
             })
     }, [])
@@ -41,13 +55,13 @@ const Staff: React.FC = () => {
             setPage(res.data.page | 0)
         }).catch(err => {
             if(err.status === 401)
-                <Navigate to='auth'/>
+                return <Navigate to='/auth'/>
             setError(err.response.data.message)
         })
     }
 
     const handleNext = () => {
-        if((page * limit) + limit <= total)
+        if(page < total / limit)
             fetchPage(page + 1)
     }
     const handlePrev = () => {
@@ -62,10 +76,14 @@ const Staff: React.FC = () => {
     return (
         <div className='staff'>
             <h1>Employees</h1>
-            <CreateEmployee fetchPage={() => {fetchPage(page)}}/>
+            <CreateEmployee
+                formRef={formRef}
+                handleFormOpen={handleFormOpen}
+                fetchPage={() => {fetchPage(page)}}
+            />
             <div className='top'>
                 <h3>Total: {total}</h3>
-                <button>Add+</button>
+                <button onClick={() => {handleFormOpen(true)}}>Add+</button>
             </div>
             {
                 employees.length > 0?
@@ -93,14 +111,14 @@ const Staff: React.FC = () => {
                             ))
                         }
                     </div>
+
+                    <Pagination
+                        currentPage={page} changePage={handlePage}
+                        nextPage={handleNext} prevPage={handlePrev}
+                        total={total} limit={limit}/>
                 </>:
                 <h3>{error}</h3>
             }
-
-            <Pagination
-                currentPage={page} changePage={handlePage}
-                nextPage={handleNext} prevPage={handlePrev}
-                total={total} limit={limit}/>
         </div>
     )
 }
