@@ -18,7 +18,7 @@ const Pagination: React.FC<Props> = (props) => {
                     <IoIosArrowDropleftCircle size={30}/>
                 </button>
                 {
-                    Array.from({length: (props.total/props.limit) + 1}).fill("1").map((_, index) => (
+                    Array.from({length: Math.ceil(props.total/props.limit)}).fill("1").map((_, index) => (
                         <button key={index}
                         className={`page-link ${props.currentPage == index+1 ? 'current-page' : ''}`}
                         onClick={() => {props.changePage(index+1)}}>

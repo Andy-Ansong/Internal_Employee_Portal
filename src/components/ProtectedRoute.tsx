@@ -7,7 +7,7 @@ interface Props{
 
 const ProtectedRoute:React.FC<Props> = ({children}) => {
     const navigate = useNavigate()
-    
+
     const token = localStorage.getItem('token')
     let isExpired = true
     if(token){

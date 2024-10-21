@@ -14,7 +14,6 @@ const Login:React.FC = () => {
         return axios.post("http://localhost:3030/api/v1/auth/login", data, {withCredentials: true})
         .then((response:AxiosResponse) => {
             const {token} = response.data
-            console.log(token)
             localStorage.setItem('token', token)
             navigate('/profile')
             return "completed"

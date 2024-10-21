@@ -1,13 +1,16 @@
-import React,{ FormEvent, useState }from 'react'
+import React,{ FormEvent, useEffect, useState }from 'react'
 import './style.css'
 import axios from 'axios'
 import{ useNavigate }from 'react-router-dom'
 import { IoClose } from "react-icons/io5"
+import { Employee } from '../../model/Employee'
 
 interface Props{
     fetchPage: () =>  void
     handleFormOpen: (e:boolean) => void
     formRef: React.RefObject<HTMLDivElement>
+    task: string
+    clickedUser?: Employee|null
 }
 interface WorkScheduleEntry {
     day: string;
@@ -57,40 +60,88 @@ const CreateEmployee: React.FC<Props> = (props) => {
         })
     }
 
+    useEffect(() => {
+        if(props.task == "edit"){
+            const employee = props.clickedUser
+            if(employee){
+                setName(employee.name)
+                setEmail(employee.email)
+                setPhone(employee.phoneNumber)
+                setTeam(employee.Department.Team.name)
+                setRole(employee.Department.Role.position)
+            }
+        }else{
+            clearForm()
+        }
+    }, [props.clickedUser, props.task])
+
     const handleFormSubmit = async(e: FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
-        const Department = {
-            Team: {
-                name: team,
-                role: role,
-                isLeader: false
+        if(props.task == 'create'){
+            const Department = {
+                Team: {
+                    name: team,
+                    role: role,
+                    isLeader: false
+                }
             }
+            const data = {
+                name, email, gender, birthDate, phoneNumber:phone,
+                WorkSchedule: workSchedule.schedule, Department
+            }
+            console.log("adding employee: ", data)
+            axios.post(`http://localhost:3030/api/v1/employees`, data,{
+                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` }
+            }).then(res => {
+                console.log(res)
+                props.fetchPage()
+                clearForm()
+                setIsLoading(false)
+            }).catch((err) => {
+                if(err.status === 401){
+                    navigate('/auth')
+                }
+                const currentError = err.response.data
+                if(currentError?.err?.message) {
+                    setError(currentError.err.message)
+                }else{
+                    setError(currentError.message)
+                }
+                setIsLoading(false)
+            })
+        }else{
+            const Department = {
+                Team: {
+                    name: team,
+                    role: role,
+                    isLeader: false
+                }
+            }
+            const data = {
+                name, email, gender, birthDate, phoneNumber:phone,
+                WorkSchedule: workSchedule.schedule, Department
+            }
+            axios.patch(`http://localhost:3030/api/v1/employees/${props.clickedUser?._id}`, data,{
+                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` }
+            }).then(res => {
+                console.log(res)
+                props.fetchPage()
+                clearForm()
+                setIsLoading(false)
+            }).catch((err) => {
+                if(err.status === 401){
+                    navigate('/auth')
+                }
+                const currentError = err.response.data
+                if(currentError?.err?.message) {
+                    setError(currentError.err.message)
+                }else{
+                    setError(currentError.message)
+                }
+                setIsLoading(false)
+            })
         }
-        const data = {
-            name, email, gender, birthDate, phoneNumber:phone,
-            WorkSchedule: workSchedule.schedule, Department
-        }
-        console.log("adding employee: ", data)
-        axios.post(`http://localhost:3030/api/v1/employees`, data,{
-            headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` }
-        }).then(res => {
-            console.log(res)
-            props.fetchPage()
-            clearForm()
-            setIsLoading(false)
-        }).catch((err) => {
-            if(err.status === 401){
-                navigate('/auth')
-            }
-            const currentError = err.response.data
-            if(currentError?.err?.message) {
-                setError(currentError.err.message)
-            }else{
-                setError(currentError.message)
-            }
-            setIsLoading(false)
-        })
         setIsLoading(false)
     }
 
@@ -110,7 +161,13 @@ const CreateEmployee: React.FC<Props> = (props) => {
     return (
         <div ref={props.formRef} className='employee-form'>
             <div className='form-headers'>
-                <h2>Add Employee</h2>
+                <h2>
+                    {
+                        props.task == "edit"?
+                        <>Edit Employee</>:
+                        <>Add Employee</>
+                    }
+                </h2>
                 <IoClose onClick={() => {props.handleFormOpen(false)}}/>
             </div>
             <form onSubmit={handleFormSubmit}>
@@ -161,16 +218,19 @@ const CreateEmployee: React.FC<Props> = (props) => {
                         </label>
                     </div>
                 </div>
-                <div className="input-container">
-                    <label>Birth Date</label>
-                    <input
-                        type="date"
-                        value={birthDate}
-                        onChange={(e) =>  setBirthDate(e.target.value)}
-                        name="date"
-                        id="date"
-                    />
-                </div>
+                {
+                    props.task == "create" &&
+                    <div className="input-container">
+                        <label>Birth Date</label>
+                        <input
+                            type="date"
+                            value={birthDate}
+                            onChange={(e) =>  setBirthDate(e.target.value)}
+                            name="date"
+                            id="date"
+                        />
+                    </div>
+                }
                 <div className="input-container">
                     <label>Phone</label>
                     <input
@@ -236,9 +296,15 @@ const CreateEmployee: React.FC<Props> = (props) => {
                 {error && <p className="error-message">{error}</p>}
                 <button type="submit">
                     {
-                        isLoading ? 
+                        isLoading ?
                         <div className='button-loader'></div>
-                        :<>Add Employee</>
+                        :<>
+                            {
+                                props.task == "edit"?
+                                <>Save Changes</>:
+                                <>Add Employee</>
+                            }
+                        </>
                     }
                 </button>
             </form>

@@ -3,8 +3,12 @@ import './styles.css'
 import Pagination from '../../components/Pagination/Pagination'
 import { Employee } from '../../model/Employee'
 import axios from 'axios'
-import { Navigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import CreateEmployee from '../../components/Forms/CreateEmployee'
+import { User } from '../../model/User'
+import { FaEdit } from "react-icons/fa"
+import { TiUserDelete } from "react-icons/ti"
+import { AiFillMessage } from "react-icons/ai"
 
 const Staff: React.FC = () => {
     const [openForm, setOpenForm] = useState<boolean>(false)
@@ -12,8 +16,12 @@ const Staff: React.FC = () => {
     const [employees, setEmployees] = useState<Array<Employee>|[]>([])
     const [total, setTotal] = useState<number>(0)
     const [page, setPage] = useState<number>(0)
+    const [user, setUser] = useState<User|null>(null)
     const [error, setError] = useState<string>("")
+    const [task, setTask] = useState<string>("create")
+    const [clickedUser, setClickedUser] = useState<Employee|null>()
     const limit = 10
+    const navigate = useNavigate()
 
     const handleFormOpen = (state:boolean) => {
         if(!formRef.current)
@@ -28,21 +36,23 @@ const Staff: React.FC = () => {
     }
 
     useEffect(() => {
-        const page = 1
-        axios.get(`http://localhost:3030/api/v1/employees?page=${page}&limit=${limit}`,
+        const startPage = page | 1
+        axios.get(`http://localhost:3030/api/v1/employees?page=${startPage}&limit=${limit}`,
             {
                 headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
             }
             ).then(res => {
+                console.log(res)
                 setEmployees(res.data.employees)
                 setTotal(res.data.total | 0)
                 setPage(res.data.page | 0)
+                setUser(res.data.user)
             }).catch(err => {
                 if(err.status === 401)
-                    return <Navigate to='/auth'/>
+                    navigate('/auth')
                 setError(err.response.data.message)
             })
-    }, [])
+    }, [navigate, page, total])
 
     const fetchPage = (pageNo:number) => {
         axios.get(`http://localhost:3030/api/v1/employees?page=${pageNo}&limit=${limit}`,
@@ -55,7 +65,22 @@ const Staff: React.FC = () => {
             setPage(res.data.page | 0)
         }).catch(err => {
             if(err.status === 401)
-                return <Navigate to='/auth'/>
+                navigate('/auth')
+            setError(err.response.data.message)
+        })
+    }
+
+    const deleteEmployee = (id: string) => {
+        axios.delete(`http://localhost:3030/api/v1/employees/${id}`,
+            {
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+            }
+        ).then(() => {
+            // setEmployees(employees.filter(employee => employee._id != id))
+            setTotal(total-1)
+        }).catch(err => {
+            if(err.status === 401)
+                navigate('/auth')
             setError(err.response.data.message)
         })
     }
@@ -73,17 +98,37 @@ const Staff: React.FC = () => {
             fetchPage(pageNo)
     }
 
+    const handleEditEmployee = (id: string) => {
+        setTask("edit")
+        setClickedUser(employees.find(emp => emp._id == id))
+        handleFormOpen(true)
+    }
+
+    const handleCreateEmployee = () => {
+        setTask("create")
+        setClickedUser(null)
+        handleFormOpen(true)
+    }
+
     return (
         <div className='staff'>
             <h1>Employees</h1>
+            {
+
+            }
             <CreateEmployee
                 formRef={formRef}
+                task={task}
+                clickedUser={clickedUser}
                 handleFormOpen={handleFormOpen}
                 fetchPage={() => {fetchPage(page)}}
             />
             <div className='top'>
                 <h3>Total: {total}</h3>
-                <button onClick={() => {handleFormOpen(true)}}>Add+</button>
+                {
+                    (user && ["admin", "hr"].includes(user.role)) &&
+                    <button onClick={handleCreateEmployee}>Add+</button>
+                }
             </div>
             {
                 employees.length > 0?
@@ -94,7 +139,7 @@ const Staff: React.FC = () => {
                         <div className='sort-item'>Email</div>
                         <div className='sort-item'>Role</div>
                     </div>
-                    <div className='staff-list'>
+                    <div className={`staff-list ${user?.role}`}>
                         {
                             employees.map((employee, index) => (
                                 <div className='employee-list-item' key={index}>
@@ -106,7 +151,15 @@ const Staff: React.FC = () => {
                                     <h3>{employee.name}</h3>
                                     <a href={`mailto:${employee.email}`} id='email' title='Send a message'>{employee.email}</a>
                                     <h4>{employee.Department.Role.position}</h4>
-                                    <button>Message</button>
+                                    {
+                                        (user && ["admin", "hr"].includes(user.role)) ?
+                                        <div className='auth-buttons'>
+                                            <button className='message' title='message'><AiFillMessage /></button>
+                                            <button className='edit' onClick={() => {handleEditEmployee(employee._id)}} title='edit'><FaEdit/></button>
+                                            <button className='delete' onClick={() => {deleteEmployee(employee._id)}} title='delete'><TiUserDelete /></button>
+                                        </div>
+                                        :<button>Message</button>
+                                    }
                                 </div>
                             ))
                         }

@@ -23,10 +23,12 @@
         align-items: center;
         justify-content: space-between;
         button{
-            padding: 7.5px 4px;
+            padding: 5px 2.5px;
             border-radius: 5px;
             background-color: #db4813dd;
             border: none;
+            width: 60px;
+            font-size: 1em;
             color: white;
         }
     }
@@ -90,6 +92,27 @@
                 background-color: #db4813dd;
                 border: none;
                 color: white;
+            }
+        }
+    }
+    .hr, .admin{
+        .employee-list-item{
+            grid-template-columns: 55px repeat(3, 1fr) 100px;
+            .auth-buttons{
+                width:  100%;
+                display: flex;
+                justify-content: space-between;
+                gap: 5px;
+                button{
+                    border-radius: 2px;
+                    width: 100%;
+                }
+                .edit{
+                    background-color: rgb(150, 150, 0);
+                }
+                .delete{
+                    background-color: #ce0e0e;
+                }
             }
         }
     }
