@@ -42,7 +42,6 @@ const Staff: React.FC = () => {
                 headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
             }
             ).then(res => {
-                console.log(res)
                 setEmployees(res.data.employees)
                 setTotal(res.data.total | 0)
                 setPage(res.data.page | 0)
@@ -52,7 +51,7 @@ const Staff: React.FC = () => {
                     navigate('/auth')
                 setError(err.response.data.message)
             })
-    }, [navigate, page, total])
+    }, [page, navigate])
 
     const fetchPage = (pageNo:number) => {
         axios.get(`http://localhost:3030/api/v1/employees?page=${pageNo}&limit=${limit}`,
