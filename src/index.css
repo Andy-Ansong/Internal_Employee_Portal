@@ -10,7 +10,7 @@
   width: 100vw;
   background-color: #0084ff06;
 }
-textarea{
+textarea, input{
   font-family: "Nunito", sans-serif,Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 .centerDiv{
