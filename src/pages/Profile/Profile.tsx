@@ -18,8 +18,10 @@ const Profile: React.FC = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
+        console.log("getting current profile")
         axios.get("http://localhost:3030/api/v1/employees/current", {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+            withCredentials: true
         }).then((res: AxiosResponse) => {
             const currentEmployee:Employee = res.data.employee
             setName(currentEmployee.name)
@@ -28,6 +30,7 @@ const Profile: React.FC = () => {
             setImage(currentEmployee.image)
             setEmployee(currentEmployee)
         }).catch(err => {
+            console.log("there was an error", err)
             if(err.status === 401)
                 navigate('/auth')
             setError(err.response.data.message)
@@ -53,7 +56,8 @@ const Profile: React.FC = () => {
             name, bio, image
         }
         axios.patch("http://localhost:3030/api/v1/employees/current", data, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+            withCredentials: true
         }).then((res: AxiosResponse) => {
             const currentEmployee:Employee = res.data.employee
             setName(currentEmployee.name)

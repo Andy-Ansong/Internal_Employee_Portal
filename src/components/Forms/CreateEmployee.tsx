@@ -92,7 +92,8 @@ const CreateEmployee: React.FC<Props> = (props) => {
             }
             console.log("adding employee: ", data)
             axios.post(`http://localhost:3030/api/v1/employees`, data,{
-                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+                withCredentials: true
             }).then(res => {
                 console.log(res)
                 props.fetchPage()
@@ -123,7 +124,8 @@ const CreateEmployee: React.FC<Props> = (props) => {
                 WorkSchedule: workSchedule.schedule, Department
             }
             axios.patch(`http://localhost:3030/api/v1/employees/${props.clickedUser?._id}`, data,{
-                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+                withCredentials: true
             }).then(res => {
                 console.log(res)
                 props.fetchPage()

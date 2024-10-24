@@ -39,7 +39,8 @@ const Staff: React.FC = () => {
         const startPage = page | 1
         axios.get(`http://localhost:3030/api/v1/employees?page=${startPage}&limit=${limit}`,
             {
-                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},
+                withCredentials: true
             }
             ).then(res => {
                 setEmployees(res.data.employees)
@@ -56,7 +57,8 @@ const Staff: React.FC = () => {
     const fetchPage = (pageNo:number) => {
         axios.get(`http://localhost:3030/api/v1/employees?page=${pageNo}&limit=${limit}`,
             {
-                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},
+                withCredentials: true
             }
         ).then(res => {
             setEmployees(res.data.employees)
@@ -72,7 +74,8 @@ const Staff: React.FC = () => {
     const deleteEmployee = (id: string) => {
         axios.delete(`http://localhost:3030/api/v1/employees/${id}`,
             {
-                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+                headers:{Authorization: `Bearer ${localStorage.getItem("token")}`},
+                withCredentials: true
             }
         ).then(() => {
             // setEmployees(employees.filter(employee => employee._id != id))

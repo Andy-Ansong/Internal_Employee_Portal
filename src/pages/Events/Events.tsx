@@ -60,6 +60,7 @@ const Events: React.FC = () => {
 
     axios.post("http://localhost:3030/api/v1/events", newEvent, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
     }).then(res => {
       setEvents([...events, res.data.event])
       setNewEventTitle('')
@@ -100,6 +101,7 @@ const Events: React.FC = () => {
     }
     axios.patch(`http://localhost:3030/api/v1/events/${editingEventId}`, updatedEvent, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      withCredentials: true
     })
     .then(res => {
       const updatedEventData = res.data.event
@@ -127,7 +129,8 @@ const Events: React.FC = () => {
 
   useEffect(() => {
     axios.get("http://localhost:3030/api/v1/events", {
-        headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+        headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+        withCredentials: true
     }).then((res: AxiosResponse) => {
       console.log(res)
       setEvents(res.data.events)
@@ -140,7 +143,8 @@ const Events: React.FC = () => {
 
   const handleDeleteEvent = (id: string) => {
     axios.delete(`http://localhost:3030/api/v1/events/${id}`, {
-      headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+      headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+      withCredentials: true
     }).then(() => {
       setEvents(events.filter(event => event._id != id))
     }).catch(err => {
