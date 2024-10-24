@@ -9,9 +9,9 @@ interface Event {
   _id?: string
   title: string
   date: Date
+  time: string
   description: string
-  isPublicHoliday: boolean
-  isPrivate: boolean
+  eventType: string
   createdBy: { userId?: string, email: string }
   receivers: Array<string>
 }
@@ -20,9 +20,9 @@ const Events: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const [events, setEvents] = useState<Event[]>([])
   const [newEventTitle, setNewEventTitle] = useState<string>('')
+  const [newEventTime, setNewEventTime] = useState<string>('')
+  const [newEventType, setNewEventType] = useState<string>('Private')
   const [newEventDescription, setNewEventDescription] = useState<string>('')
-  const [newEventPublicHoliday, setNewEventPublicHoliday] = useState<boolean>(false)
-  const [newEventPrivate, setNewEventPrivate] = useState<boolean>(false)
   const [newEventReceivers, setNewEventReceivers] = useState<string>('')
   const navigate = useNavigate()
 
@@ -30,9 +30,9 @@ const Events: React.FC = () => {
   const [editingEventId, setEditingEventId] = useState<string|null>(null)
   const [editingEventTitle, setEditingEventTitle] = useState<string>('')
   const [editingEventDescription, setEditingEventDescription] = useState<string>('')
+  const [editingEventType, setEditingEventType] = useState<string>('')
+  const [editingEventTime, setEditingEventTime] = useState<string>('')
   const [editingEventReceivers, setEditingEventReceivers] = useState<string>('')
-  const [editingEventPublicHoliday, setEditingEventPublicHoliday] = useState<boolean>(false)
-  const [editingEventPrivate, setEditingEventPrivate] = useState<boolean>(false)
   const [error, setError] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -51,9 +51,9 @@ const Events: React.FC = () => {
     const newEvent: Event = {
       title: newEventTitle,
       date: selectedDate,
+      time: newEventTime,
       description: newEventDescription,
-      isPublicHoliday: newEventPublicHoliday,
-      isPrivate: newEventPrivate,
+      eventType: newEventType,
       createdBy: { email: "" },
       receivers: newEventReceivers ? newEventReceivers.split(',').map((receiver) => receiver.trim()) : []
     }
@@ -64,9 +64,9 @@ const Events: React.FC = () => {
     }).then(res => {
       setEvents([...events, res.data.event])
       setNewEventTitle('')
+      setNewEventTime('')
       setNewEventDescription('')
-      setNewEventPublicHoliday(false)
-      setNewEventPrivate(false)
+      setNewEventType("Private")
       setNewEventReceivers('')
       setIsLoading(false)
     }).catch(err => {
@@ -83,10 +83,10 @@ const Events: React.FC = () => {
   
     setEditingEventId(id)
     setEditingEventTitle(eventToEdit.title)
+    setEditingEventTime(eventToEdit.time)
     setEditingEventDescription(eventToEdit.description)
+    setEditingEventType(eventToEdit.eventType)
     setEditingEventReceivers(eventToEdit.receivers.join(', '))
-    setEditingEventPublicHoliday(eventToEdit.isPublicHoliday)
-    setEditingEventPrivate(eventToEdit.isPrivate)
   }
 
   const handleSaveEdit = () => {
@@ -95,9 +95,9 @@ const Events: React.FC = () => {
     const updatedEvent = {
       title: editingEventTitle,
       description: editingEventDescription,
-      receivers: editingEventReceivers.split(',').map(receiver => receiver.trim()),
-      isPublicHoliday: editingEventPublicHoliday,
-      isPrivate: editingEventPrivate,
+      eventType: editingEventType,
+      time: editingEventTime,
+      receivers: editingEventReceivers.split(',').map(receiver => receiver.trim())
     }
     axios.patch(`http://localhost:3030/api/v1/events/${editingEventId}`, updatedEvent, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -122,9 +122,9 @@ const Events: React.FC = () => {
     setEditingEventId(null)
     setEditingEventTitle('')
     setEditingEventDescription('')
+    setEditingEventType('')
+    setEditingEventTime('')
     setEditingEventReceivers('')
-    setEditingEventPublicHoliday(false)
-    setEditingEventPrivate(false)
   }
 
   useEffect(() => {
@@ -177,7 +177,7 @@ const Events: React.FC = () => {
         <div className="events-left">
           <div className="calendar">
             <h2>Calendar</h2>
-            <Calendar value={selectedDate} onClickDay={handleDayClick} tileContent={tileContent} />
+            <Calendar minDate={new Date()} value={selectedDate} onClickDay={handleDayClick} tileContent={tileContent} />
           </div>
           <div className="add-event">
             <h2>Add Event</h2>
@@ -200,19 +200,22 @@ const Events: React.FC = () => {
                 placeholder="Receivers (comma-separated)"
               />
               <div className='label-container'>
-                <label>Public Holiday</label>
-                <input
-                  type="checkbox"
-                  checked={newEventPublicHoliday}
-                  onChange={(e) => setNewEventPublicHoliday(e.target.checked)}
-                />
+                <label>Event Type</label>
+                <select name="eventType"
+                  id="eventType" value={newEventType}
+                  onChange={(e) => setNewEventType(e.target.value)}>
+                    <option value="Public">Public</option>
+                    <option value="Private">Private</option>
+                    <option value="Holiday">Public Holiday</option>
+                  </select>
               </div>
               <div className='label-container'>
-                <label>Private Event</label>
+                <label>Event Time</label>
                 <input
-                  type="checkbox"
-                  checked={newEventPrivate}
-                  onChange={(e) => setNewEventPrivate(e.target.checked)}
+                  min={new Date().toISOString().slice(11, 16)}
+                  type="time"
+                  value={newEventTime}
+                  onChange={(e) => {console.log(e.target.value);setNewEventTime(e.target.value)}}
                 />
               </div>
               <span className='events-error'>{error}</span>
@@ -241,6 +244,14 @@ const Events: React.FC = () => {
                         onChange={(e) => setEditingEventTitle(e.target.value)}
                         placeholder="Edit Title"
                       />
+                      <div className='label-container'>
+                        <label>Event Time</label>
+                        <input
+                          type="time"
+                          value={editingEventTime}
+                          onChange={(e) => setEditingEventTime(e.target.value)}
+                        />
+                      </div>
                       <h4>Description</h4>
                       <textarea
                         value={editingEventDescription}
@@ -254,21 +265,15 @@ const Events: React.FC = () => {
                         onChange={(e) => setEditingEventReceivers(e.target.value)}
                         placeholder="Edit Receivers"
                       />
-                      <div className="label-container">
-                        <label>Public Holiday</label>
-                        <input
-                          type="checkbox"
-                          checked={editingEventPublicHoliday}
-                          onChange={(e) => setEditingEventPublicHoliday(e.target.checked)}
-                        />
-                      </div>
-                      <div className="label-container">
-                        <label>Private Event</label>
-                        <input
-                          type="checkbox"
-                          checked={editingEventPrivate}
-                          onChange={(e) => setEditingEventPrivate(e.target.checked)}
-                        />
+                      <div className='label-container'>
+                        <label>Event Type</label>
+                        <select name="eventType"
+                          id="eventType" value={newEventType}
+                          onChange={(e) => setNewEventType(e.target.value)}>
+                            <option value="Public">Public</option>
+                            <option value="Private">Private</option>
+                            <option value="Holiday">Public Holiday</option>
+                          </select>
                       </div>
                       <div className="events-button">
                         <button className="save" onClick={handleSaveEdit}>
@@ -285,9 +290,9 @@ const Events: React.FC = () => {
                         <p><span>Title:</span> {event.title}</p>
                         <p><span>Description:</span> {event.description}</p>
                         <p><span>Created By:</span> {event.createdBy.email}</p>
+                        <p><span>Time:</span> {event.time}</p>
                         <p><span>Receivers:</span> {event.receivers.join(', ')}</p>
-                        <p><span>Public Holiday:</span> {event.isPublicHoliday ? 'Yes' : 'No'}</p>
-                        <p><span>Private:</span> {event.isPrivate ? 'Yes' : 'No'}</p>
+                        <p><span>Event Type:</span> {event.eventType}</p>
                       </div>
                       <div className="events-button">
                         <button className="edit" onClick={() => handleEditEvent(event._id!)}>

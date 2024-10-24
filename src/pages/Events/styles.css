@@ -94,18 +94,31 @@
             position: relative;
             display: grid;
             gap: 10px;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: auto 150px;
             margin-bottom: 5px;
-            width: min-content;
+            width: 100%;
+            align-items: center;
             label{
-                width: 150px;
+                width: 100%;
                 font-size: 1.05em;
             }
-            input{
-                scale: 1.7;
-                position: relative;
-                top: 2px;
-                right: 20px;
+            input[type="time"]{
+                align-self: center;
+                justify-self:end;
+                margin: 0;
+                padding: 0;
+                height: 30px;
+                width: 100%;
+                font-size: 1em;
+                &::-webkit-calendar-picker-indicator {
+                    position: relative;
+
+                }
+            }
+            select{
+                height: 30px;
+                width: 100%;
+                font-size: 1em;
             }
         }
         .event-list{
