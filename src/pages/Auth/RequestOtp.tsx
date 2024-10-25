@@ -14,7 +14,7 @@ const RequestOtp: React.FC<Props> = ({handlePage}) => {
         }
         return axios.post("http://localhost:3030/api/v1/auth/request", data, {withCredentials: true})
         .then((response: AxiosResponse) => {
-            console.log(response.data)
+            console.log(response.data.otp)
             handlePage("login")
             return "completed"
         })

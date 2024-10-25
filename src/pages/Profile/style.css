@@ -64,7 +64,7 @@
                     place-items: center;
                     cursor: pointer;
                     height: min-content;
-                    background-color: #ff5c21ec;
+                    background-color: blue;
                 }
             }
             .bio{
@@ -116,7 +116,6 @@
                     border: none;
                     border-radius: 5px;
                     color: white;
-                    background-color: rgb(241, 94, 40);
                 }
             }
         }

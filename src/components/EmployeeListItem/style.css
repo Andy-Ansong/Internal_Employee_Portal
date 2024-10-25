@@ -1,0 +1,70 @@
+.employee-list-item{
+    display: grid;
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    align-items: center;
+    gap: 5px;
+    grid-template-columns: 55px repeat(3, 1fr) 65px;
+    &:hover{
+        box-shadow: 0 0 5px #0005;
+    }
+    .image-container{
+        overflow:hidden;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+    h3,h4,a{
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    h3{
+        font-size: 1em;
+        font-weight: 500;
+    }
+    h4{
+        font-size: 1em;
+        font-weight: 400;
+    }
+    button{
+        padding: 7.5px 4px;
+        border-radius: 5px;
+        border: none;
+        color: white;
+    }
+}
+.self{
+    .image-container{
+        border: 2px solid blue;
+        padding: 2px;
+        img{
+            border-radius: 50%;
+        }
+    }
+}
+.hr, .admin{
+    grid-template-columns: 55px repeat(3, 1fr) 100px;
+    .auth-buttons{
+        width:  100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+        button{
+            border-radius: 2px;
+            width: 100%;
+        }
+        .edit{
+            background-color: rgb(150, 150, 0);
+        }
+        .delete{
+            background-color: #ce0e0e;
+        }
+    }
+}

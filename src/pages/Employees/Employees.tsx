@@ -6,9 +6,7 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import CreateEmployee from '../../components/Forms/CreateEmployee'
 import { User } from '../../model/User'
-import { FaEdit } from "react-icons/fa"
-import { TiUserDelete } from "react-icons/ti"
-import { AiFillMessage } from "react-icons/ai"
+import EmployeeListItem from '../../components/EmployeeListItem/EmployeeListItem'
 
 const Staff: React.FC = () => {
     const [openForm, setOpenForm] = useState<boolean>(false)
@@ -47,6 +45,7 @@ const Staff: React.FC = () => {
                 setTotal(res.data.total | 0)
                 setPage(res.data.page | 0)
                 setUser(res.data.user)
+                console.log(res.data)
             }).catch(err => {
                 if(err.status === 401)
                     navigate('/auth')
@@ -71,6 +70,31 @@ const Staff: React.FC = () => {
         })
     }
 
+    const handleNext = () => {
+        if(page < total / limit)
+            fetchPage(page + 1)
+    }
+    const handlePrev = () => {
+        if(page > 1)
+            fetchPage(page - 1)
+    }
+    const handlePage = (pageNo: number) => {
+        if(pageNo != page)
+            fetchPage(pageNo)
+    }
+
+    const handleCreateEmployee = () => {
+        setTask("create")
+        setClickedUser(null)
+        handleFormOpen(true)
+    }
+
+    const handleEditEmployee = (id: string) => {
+        setTask("edit")
+        setClickedUser(employees.find(emp => emp._id == id))
+        handleFormOpen(true)
+    }
+    
     const deleteEmployee = (id: string) => {
         axios.delete(`http://localhost:3030/api/v1/employees/${id}`,
             {
@@ -87,37 +111,9 @@ const Staff: React.FC = () => {
         })
     }
 
-    const handleNext = () => {
-        if(page < total / limit)
-            fetchPage(page + 1)
-    }
-    const handlePrev = () => {
-        if(page > 1)
-            fetchPage(page - 1)
-    }
-    const handlePage = (pageNo: number) => {
-        if(pageNo != page)
-            fetchPage(pageNo)
-    }
-
-    const handleEditEmployee = (id: string) => {
-        setTask("edit")
-        setClickedUser(employees.find(emp => emp._id == id))
-        handleFormOpen(true)
-    }
-
-    const handleCreateEmployee = () => {
-        setTask("create")
-        setClickedUser(null)
-        handleFormOpen(true)
-    }
-
     return (
         <div className='staff'>
             <h1>Employees</h1>
-            {
-
-            }
             <CreateEmployee
                 formRef={formRef}
                 task={task}
@@ -141,28 +137,15 @@ const Staff: React.FC = () => {
                         <div className='sort-item'>Email</div>
                         <div className='sort-item'>Role</div>
                     </div>
-                    <div className={`staff-list ${user?.role}`}>
+                    <div className={`staff-list`}>
                         {
                             employees.map((employee, index) => (
-                                <div className='employee-list-item' key={index}>
-                                    <div className='image-container'>
-                                        <img
-                                            src={employee.image}
-                                        />
-                                    </div>
-                                    <h3>{employee.name}</h3>
-                                    <a href={`mailto:${employee.email}`} id='email' title='Send a message'>{employee.email}</a>
-                                    <h4>{employee.Department.Role.position}</h4>
-                                    {
-                                        (user && ["admin", "hr"].includes(user.role)) ?
-                                        <div className='auth-buttons'>
-                                            <button className='message' title='message'><AiFillMessage /></button>
-                                            <button className='edit' onClick={() => {handleEditEmployee(employee._id)}} title='edit'><FaEdit/></button>
-                                            <button className='delete' onClick={() => {deleteEmployee(employee._id)}} title='delete'><TiUserDelete /></button>
-                                        </div>
-                                        :<button>Message</button>
-                                    }
-                                </div>
+                                <EmployeeListItem
+                                    employee={employee}
+                                    user={user}
+                                    key={index}
+                                    handleEditEmployee={handleEditEmployee}
+                                    deleteEmployee={deleteEmployee}/>
                             ))
                         }
                     </div>

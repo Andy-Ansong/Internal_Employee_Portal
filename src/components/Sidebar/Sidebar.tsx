@@ -38,10 +38,10 @@ const Sidebar: React.FC = () => {
                     <BsFillBuildingFill title="employees" />
                     <h3>Employees</h3>
                 </NavLink>
-                {/* <NavLink className='nav-item' to='team'>
+                <NavLink className='nav-item' to='team'>
                     <IoPeopleCircle title="team" />
                     <h3>Team</h3>
-                </NavLink> */}
+                </NavLink>
             </div>
             <div className='bottom'>
                 <NavLink className='nav-item' to='profile'>
