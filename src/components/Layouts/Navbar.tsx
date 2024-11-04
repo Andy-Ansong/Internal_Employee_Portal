@@ -22,6 +22,7 @@ import axios from 'axios';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [status, setStatus] = useState<string>('Loading...');
   const [currentUser, setCurrentUser] = useState<Employee|null>(null);
   const location = useLocation();
 
@@ -37,9 +38,14 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await axios.get("http://localhost:3030/api/v1/employees/671541521bc9fe23dc8a3d79");
+        const response = await axios.get("http://localhost:3030/api/v1/employees/current",{
+          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
+      });
         setCurrentUser(response.data.employee);
+        setStatus("")
       } catch (error) {
+        setStatus("Failed to fetch current user");
         console.error("Failed to fetch current user", error);
       }
     };
@@ -62,7 +68,7 @@ const Navbar: React.FC = () => {
                   <AvatarFallback></AvatarFallback>
                 </Avatar>
                 <div className="ml-3">
-                  <div className="text-base font-medium">{currentUser ? currentUser?.name : 'Loading...'}</div>
+                  <div className="text-base font-medium">{currentUser ? currentUser?.name : status}</div>
                 </div>
               </div>
             </Link>

@@ -42,7 +42,7 @@ const TeamPage: React.FC = () => {
               <h3>{member.Department.Role.position}</h3>
               <h4>{member.Department.Team.role}</h4>
               <h3>Date Hired</h3>
-              <h4>{member.Department.Role.startDate.slice(0,10)}</h4>
+              <h4>{new Date(member.Department.Role.startDate).toISOString().slice(0,10)}</h4>
               <div className='member-contacts'>
                 <div>
                   <CiMail />

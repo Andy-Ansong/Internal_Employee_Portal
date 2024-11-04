@@ -4,17 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import Employee from "@/model/Employee"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast, useToast } from "@/components/ui/use-toast"
-import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react'
-
-interface Employee {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { useToast } from "@/components/ui/use-toast"
+import { Loader2, Plus } from 'lucide-react'
 
 interface User {
   role: string;
@@ -43,10 +37,10 @@ const Employees: React.FC = () => {
   const fetchEmployees = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:3030/api/v1/employees?page=${currentPage}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(`http://localhost:3030/api/v1/employees?page=${currentPage}&limit=10`,{
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+      })
       setEmployees(response.data.employees);
       setTotalCount(response.data.total);
       setError(null);
@@ -65,7 +59,8 @@ const Employees: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:3030/api/v1/user', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
       });
       setUser(response.data);
     } catch (err) {
@@ -79,33 +74,6 @@ const Employees: React.FC = () => {
     setIsFormVisible(true);
   };
 
-  const handleEditEmployee = (employee: Employee) => {
-    setIsEditMode(true);
-    setCurrentEmployee(employee);
-    setIsFormVisible(true);
-  };
-
-  const handleDeleteEmployee = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3030/api/v1/employees/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      toast({
-        title: "Employee deleted",
-        description: "The employee record has been successfully deleted.",
-      });
-      fetchEmployees();
-    } catch (error) {
-      console.log(error)
-      toast({
-        title: "Error",
-        description: "Failed to delete employee",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -115,17 +83,19 @@ const Employees: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       if (isEditMode && currentEmployee) {
-        await axios.put(`http://localhost:3030/api/v1/employees/${currentEmployee._id}`, employeeData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.put(`http://localhost:3030/api/v1/employees/${currentEmployee._id}`, employeeData,{
+          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
+      })
         toast({
           title: "Employee updated",
           description: "The employee record has been successfully updated.",
         });
       } else {
-        await axios.post('http://localhost:3030/api/v1/employees', employeeData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.post('http://localhost:3030/api/v1/employees', employeeData,{
+          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
+        })
         toast({
           title: "Employee added",
           description: "A new employee record has been successfully created.",
@@ -176,16 +146,18 @@ const Employees: React.FC = () => {
 
   const EmployeeListItem: React.FC<{ employee: Employee }> = ({ employee }) => (
     <Card className="mb-4">
-      <CardContent className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold">{employee.name}</h3>
-          <p className="text-sm text-muted-foreground">{employee.email}</p>
-          <p className="text-sm text-muted-foreground">Role: {employee.role}</p>
+      <CardContent className="grid h-[60px] grid-cols-[50px,repeat(3,1fr),1fr,auto] py-[5px] gap-[10px] items-center">
+        <div className="w-[50px] h-[50px] rounded-[50%] overflow-hidden">
+          <img src={employee.image} alt={employee.name} className="w-full h-full object-cover"/>
         </div>
+        <h3 className="text-lg font-semibold text-ellipsis overflow-hidden line-clamp-1">{employee.name}</h3>
+        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1">{employee.email}</p>
+        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1 hidden md:block">{employee.phoneNumber}</p>
+        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1">Role: {employee.Department.Role.position}</p>
         <div>
-          <div className="cursor-pointer shadow rounded border py-[5px] px-[5px] border-black" variant="outline" size="icon" onClick={() => navigate(`/employees/${employee._id}`)}>
+        <div className="cursor-pointer shadow rounded border py-[5px] px-[5px] flex items-center justify-center" onClick={() => navigate(`/employees/${employee._id}`)}>
             View Details
-          </div>
+        </div>
         </div>
       </CardContent>
     </Card>

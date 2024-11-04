@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import { Event } from '@/model/Event';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,16 +15,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 // Setup the localizer for react-big-calendar
 const localizer = momentLocalizer(moment);
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  receivers: string;
-  type: 'Public' | 'Private' | 'Holiday';
-  start: Date;
-  end: Date;
-}
 
 const Events: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -48,8 +39,10 @@ const Events: React.FC = () => {
 
     if (name === 'receivers' && value) {
       try {
-        console.log("value: ", value)
-        const response = await axios.get(`http://localhost:3030/api/v1/users?name=${value}`);
+        const response = await axios.get(`http://localhost:3030/api/v1/users?name=${value}`,{
+          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
+      })
         const emails = response.data.users.map((user: { email: string }) => user.email); // Extract emails
         console.log(response.data)
         setSuggestions(emails ?? []);
@@ -78,7 +71,10 @@ const Events: React.FC = () => {
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:3030/api/v1/events');
+      const response = await axios.get('http://localhost:3030/api/v1/events',{
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+    })
       const formattedEvents = response.data.events.map((event: any) => ({
         ...event,
         start: new Date(event.start),
@@ -139,19 +135,19 @@ const Events: React.FC = () => {
 
     const now = new Date();
 
-    // Check if the start date is in the past
     if (formData.start < now) {
-        toast({
-            title: "Error",
-            description: "Start date cannot be in the past.",
-            variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
+      alert("Event cannot be in the past")
+      toast({
+          title: "Error",
+          description: "Start date cannot be in the past.",
+          variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
     }
 
-    // Check if the end date is before or equal to the start date
     if (formData.end <= formData.start) {
+      alert("End date must be after the start date")
         toast({
             title: "Error",
             description: "End date must be after the start date.",
@@ -163,13 +159,19 @@ const Events: React.FC = () => {
 
     try {
         if (isEditing && selectedEvent) {
-            await axios.patch(`http://localhost:3030/api/v1/events/${selectedEvent._id}`, formData);
+            await axios.patch(`http://localhost:3030/api/v1/events/${selectedEvent._id}`, formData,{
+              headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+              withCredentials: true
+          })
             toast({
                 title: "Success",
                 description: "Event updated successfully",
             });
         } else {
-            await axios.post('http://localhost:3030/api/v1/events', formData);
+            await axios.post('http://localhost:3030/api/v1/events', formData,{
+              headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+              withCredentials: true
+          })
             toast({
                 title: "Success",
                 description: "Event added successfully",

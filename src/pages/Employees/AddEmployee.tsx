@@ -107,7 +107,10 @@ const AddEmployeePage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
   
-    axios.post('http://localhost:3030/api/v1/employees', formData)
+    axios.post('http://localhost:3030/api/v1/employees', formData,{
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+      })
       .then(res => {
         console.log(res)
         toast({
@@ -293,15 +296,15 @@ const AddEmployeePage: React.FC = () => {
         <div>
           <Label>Work Schedule</Label>
           {formData.WorkSchedule.map((schedule, index) => (
-            <div key={index} className="flex gap-2 mt-2">
-              <div className="border border-[#d0d0d0] rounded-md w-[180px] flex items-center px-3 py-2 text-sm h-9">
+            <div key={index} className="flex gap-4 mt-2">
+              <div className="border w-full border-[#d0d0d0] rounded-md flex items-center px-3 py-2 text-sm h-9">
                 {schedule?.day}
               </div>
               <Select
                 value={schedule.type}
                 onValueChange={(value) => handleWorkScheduleChange(index, 'type', value)}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,7 +315,7 @@ const AddEmployeePage: React.FC = () => {
             </div>
           ))}
         </div>
-        <footer className="flex w-full justify-between gap-[10px] mt-5">
+        <footer className="flex w-full justify-between gap-4 mt-5">
           <Button className="w-full" type="button" variant="outline" onClick={() => setFormData({ ...formData })}>
             Cancel
           </Button>

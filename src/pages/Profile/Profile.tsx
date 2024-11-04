@@ -14,8 +14,13 @@ const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: b
   const navigate = useNavigate()
 
   const handleDelete = () => {
-    axios.delete(`http://localhost:3030/api/v1/employees/${employee._id}`)
-      .then(res => {
+    const confirm = window.confirm("Are you sure you want to delete this employee?")
+    if(!confirm)return
+    const token = localStorage.getItem('token');
+    axios.delete(`http://localhost:3030/api/v1/employees/${employee._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true}
+    ).then(res => {
         console.log(res)
         toast({
           title: "Employee Deleted",
@@ -154,7 +159,10 @@ export default function Component() {
         }else{
           uri = `http://localhost:3030/api/v1/employees/671541521bc9fe23dc8a3d79`
         }
-        const response = await axios.get(uri);
+        const response = await axios.get(uri,{
+          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          withCredentials: true
+        })
         if (response.data.employee) {
           setEmployee(response.data.employee);
         } else {
@@ -173,7 +181,10 @@ export default function Component() {
 
   const handleEdit = async (updatedEmployee: Employee) => {
     try {
-      await axios.patch(`http://localhost:3030/api/v1/employees/${id}`, updatedEmployee);
+      await axios.patch(`http://localhost:3030/api/v1/employees/${id}`, updatedEmployee,{
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+      })
       setEmployee(updatedEmployee);
       setIsEditing(false);
     } catch (err) {

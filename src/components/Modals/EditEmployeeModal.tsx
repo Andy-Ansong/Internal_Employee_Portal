@@ -89,7 +89,10 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const employeeId = formData._id;
-    axios.patch(`http://localhost:3030/api/v1/employees/${employeeId}`, formData)
+    axios.patch(`http://localhost:3030/api/v1/employees/${employeeId}`, formData,{
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+      })
       .then(response => {
         console.log(response)
         toast({
@@ -110,7 +113,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
   };
 
   return (
-    <div open={true} onOpenChange={onClose} className='absolute backdrop-blur top-0 w-full border flex justify-center p-[20px] bg-[#000a]'>
+    <div className='absolute backdrop-blur top-0 w-full border flex justify-center p-[20px] bg-[#000a]'>
       <div className="sm:max-w-[625px] min-w-[550px] bg-white p-10 rounded">
         <header className='flex justify-between items-center mb-5'>
           <h1 className="text-[18px] leading-[24px] font-[500]">Edit Employee Details</h1>
@@ -155,8 +158,9 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
             <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
                 <input type="date"
                 id="birthDate"
+                value={new Date(formData.birthDate).toISOString().split('T')[0]}
                 className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
-                onChange={(date: Date) => setFormData(prev => ({ ...prev, birthDate: date }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, birthDate: new Date(e.target.value) }))}
                 />
             </div>
           </div>
@@ -205,15 +209,15 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
                 <input
                     className="outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]"
                     type='date'
+                    value={new Date(formData.Department.Role.startDate).toISOString().split('T')[0]}
                     id="startDate"
-                    selected={new Date(formData.Department.Role.startDate)}
-                    onChange={(date: Date) => setFormData(prev => ({
+                    onChange={(e) => setFormData(prev => ({
                         ...prev,
                         Department: {
                         ...prev.Department,
                         Role: {
                             ...prev.Department.Role,
-                            startDate: date
+                            startDate: new Date(e.target.value)
                         }
                         }
                     }))}
@@ -242,15 +246,15 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
           <div>
             <Label>Work Schedule</Label>
             {formData.WorkSchedule.map((schedule, index) => (
-              <div key={index} className="flex gap-2 mt-2">
-                <div className="border border-[#d0d0d0] rounded-md w-[180px] flex items-center px-3 py-2 text-sm h-9">
+              <div key={index} className="flex gap-4 mt-2">
+                <div className="border border-[#d0d0d0] rounded-md w-full flex items-center px-3 py-2 text-sm h-9">
                   {schedule?.day}
                 </div>
                 <Select
                   value={schedule.type}
                   onValueChange={(value) => handleWorkScheduleChange(index, 'type', value)}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -261,7 +265,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               </div>
             ))}
           </div>
-          <footer className="flex w-full justify-between gap-[10px]">
+          <footer className="flex w-full justify-between gap-4">
             <Button className="w-full" type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
