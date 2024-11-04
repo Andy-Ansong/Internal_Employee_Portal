@@ -2,12 +2,12 @@ export interface Employee{
     name: string,
     bio: string,
     email: string,
-    _id: string,
-    image: string,
+    _id?: string,
+    image?: string,
     birthDate: Date,
     phoneNumber: string,
     gender: string,
-    userId: string,
+    userId?: string,
     skills: Array<string>,
     Department: {
         Role: {

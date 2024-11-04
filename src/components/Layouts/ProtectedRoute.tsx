@@ -1,15 +1,16 @@
-// import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import Navbar from "./Navbar"
 
 interface Props{
     children: React.ReactNode
 }
 
 const ProtectedRoute:React.FC<Props> = ({children}) => {
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
 
-    const token = localStorage.getItem('token')
+    // let token = localStorage.getItem('token')
     // let isExpired = true
     // if(token){
     //     let payload = JSON.parse(atob(token.split('.')[1]))
@@ -30,14 +31,19 @@ const ProtectedRoute:React.FC<Props> = ({children}) => {
     //         })
     //         .catch((err) => {
     //             console.log(err)
-    //             navigate('/auth')
+    //             navigate('/')
     //         })
     //     }
     // }
-    if(!token)
-        navigate('/auth')
+    // if(!token)
+    //     navigate('/')
 
-    return children
+    return (
+        <>
+            <Navbar/>
+            {children}
+        </>
+    )
 }
 
 export default ProtectedRoute

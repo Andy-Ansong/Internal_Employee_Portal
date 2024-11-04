@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 *{
   margin: 0;
   padding: 0;
@@ -9,11 +12,6 @@
   overflow-x: hidden;
   width: 100vw;
   background-color: #0084ff06;
-  background-image: url('auth_background.jpg'),
-    linear-gradient(225deg, rgb(255, 211, 130), rgb(255, 255, 130), rgb(226, 226, 226) 120%);
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
   min-height: 100vh;
 }
 textarea, input{
@@ -44,9 +42,13 @@ a{
 button{
   transition: .3s;
   cursor: pointer;
-  background-color: blue;
 }
 button:hover{
   opacity: .8;
   box-shadow: 0 0 5px #0005;
+}
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
 }

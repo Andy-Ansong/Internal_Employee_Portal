@@ -1,193 +1,217 @@
-import React, { FormEvent, useEffect, useState } from 'react'
-import './style.css'
-import axios, { AxiosResponse } from 'axios'
-import { Employee } from '../../model/Employee'
-import { useNavigate } from 'react-router-dom'
+import { FC, useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Employee } from "@/model/Employee";
+import { Mail, Phone, Cake, MapPin, Calendar, Users, Briefcase } from 'lucide-react';
+import axios from 'axios';
+import { toast } from "@/components/ui/use-toast"
+import EditEmployeeModal from '../../components/Modals/EditEmployeeModal';
 
-const Profile: React.FC = () => {
-    const [isEditing, setIsEditing] = useState<boolean>(false)
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [isOpen, setIsOpen] = useState<string>('personal')
-    const [employee, setEmployee] = useState<Employee|null>(null)
-    const [error, setError] = useState<string>("")
+const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: boolean }> = ({ employee, onEdit, isEditing }) => {
+  const navigate = useNavigate()
 
-    const [name, setName] = useState<string>("")
-    const [bio, setBio] = useState<string>("")
-    const [phoneNumber, setPhoneNumber] = useState<string>("")
-    const [image, setImage] = useState<string>("")
-    const navigate = useNavigate()
+  const handleDelete = () => {
+    axios.delete(`http://localhost:3030/api/v1/employees/${employee._id}`)
+      .then(res => {
+        console.log(res)
+        toast({
+          title: "Employee Deleted",
+          description: "The employee details have been successfully updated.",
+        });
+        navigate('/employees')
+      })
+      .catch(error => {
+        console.error("Error updating employee:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem updating the employee details.",
+          variant: "destructive",
+        });
+      });
+  }
 
-    useEffect(() => {
-        console.log("getting current profile")
-        axios.get("http://localhost:3030/api/v1/employees/current", {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-            withCredentials: true
-        }).then((res: AxiosResponse) => {
-            const currentEmployee:Employee = res.data.employee
-            setName(currentEmployee.name)
-            setBio(currentEmployee.bio)
-            setPhoneNumber(currentEmployee.phoneNumber)
-            setImage(currentEmployee.image)
-            setEmployee(currentEmployee)
-        }).catch(err => {
-            console.log("there was an error", err)
-            if(err.status === 401)
-                navigate('/auth')
-            setError(err.response.data.message)
-        })
-    }, [navigate])
+  return (
+    <div className={`container mx-auto p-6 max-w-4xl ${isEditing ? 'h-[1000px]' : ''} overflow-hidden`}>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <Avatar className="w-32 h-32">
+              <AvatarImage className="object-cover" src={employee?.image} alt={employee?.name} />
+              {
+                employee?.name &&
+                <AvatarFallback>{employee.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              }
+            </Avatar>
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl font-bold mb-2">{employee?.name}</h1>
+              <p className="text-muted-foreground mb-4">{employee?.Department?.Role?.position}</p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
+                {employee.skills && employee?.skills.map((skill, index) => (
+                  <Badge key={index} variant="secondary">{skill}</Badge>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">{employee?.bio}</p>
+              <button onClick={onEdit} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                Edit
+              </button>
+              <button onClick={handleDelete} className="mt-4 ml-3 bg-red-500 text-white px-4 py-2 rounded">
+                Delete
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-    const toggleDropdown = (tab: string) => {
-        if(isOpen == tab)
-            tab = ''
-        setIsOpen(tab)
-    }
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Mail className="text-muted-foreground" />
+                <span>{employee?.email}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="text-muted-foreground" />
+                <span>{employee?.phoneNumber}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cake className="text-muted-foreground" />
+                <span>{format(new Date(employee?.birthDate), 'MMMM d, yyyy')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="text-muted-foreground" />
+                <span>{employee?.Department?.Role?.location}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-    const startEditing = (val: boolean) => {
-        console.log(val)
-        console.log("is edting is true")
-        setIsEditing(val)
-    }
+        <Card>
+          <CardHeader>
+            <CardTitle>Department Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Briefcase className="text-muted-foreground" />
+                <span>Position: {employee?.Department?.Role?.position}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="text-muted-foreground" />
+                <span>Start Date: {format(new Date(employee?.Department?.Role?.startDate), 'MMMM d, yyyy')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="text-muted-foreground" />
+                <span>Team: {employee?.Department?.Team?.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Team Role: {employee?.Department?.Team?.role}</span>
+                {employee?.Department?.Team?.isLeader && <Badge>Team Leader</Badge>}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-    const updateEmployee = (e:FormEvent) => {
-        setIsLoading(true)
-        e.preventDefault()
-        const data = {
-            name, bio, image
-        }
-        axios.patch("http://localhost:3030/api/v1/employees/current", data, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-            withCredentials: true
-        }).then((res: AxiosResponse) => {
-            const currentEmployee:Employee = res.data.employee
-            setName(currentEmployee.name)
-            setBio(currentEmployee.bio)
-            setPhoneNumber(currentEmployee.phoneNumber)
-            setImage(currentEmployee.image)
-            setEmployee(currentEmployee)
-            setIsLoading(false)
-        }).catch(err => {
-            if(err.status === 401)
-                navigate('/auth')
-            setError(err.response.data.message)
-            setIsLoading(false)
-        })
-        setIsEditing(false)
-    }
-
-    return (
-        <div className='profile-page'>
-            {
-                employee ?
-                <>
-                    <div className='profile-card'>
-                        <h1 className='tag' onClick={() => {toggleDropdown('personal')}}>Personal file</h1>
-                        {
-                            isOpen == "personal" &&
-                            <form className='personal' onSubmit={(e) => {updateEmployee(e)}}>
-                                <div className='image-button'>
-                                    <div className='image-container'>
-                                        <img
-                                            src={employee.image}
-                                        />
-                                    </div>
-                                    <div>
-                                        {
-                                            isEditing
-                                            ?<input placeholder='Name here' type="text" id='name' value={name} onChange={(e) => {setName(e.target.value)}}/>
-                                            :<h1>{employee.name}</h1>
-                                        }
-                                        <p>{employee.gender}</p>
-                                    </div>
-                                    {
-                                        isEditing
-                                        ?<button type='submit'>
-                                            {
-                                                isLoading ? <div className='button-loader'></div> : <>Update</>
-                                            }
-                                        </button>
-                                        :<div className='button' onClick={() => {startEditing(true)}}>Edit</div>
-                                    }
-                                </div>
-                                <p className='bio'>
-                                    {
-                                        isEditing
-                                        ?<textarea rows={4} cols={40} placeholder='Short description' value={bio} onChange={(e) => {setBio(e.target.value)}}></textarea>
-                                        :<p>{employee.bio}</p>
-                                    }
-                                </p>
-                                <div className='personal-details'>
-                                    <div>
-                                        <h3>Phone number</h3>
-                                        {
-                                            isEditing
-                                            ?<input  type='number' value={phoneNumber} onChange={(e) => {setPhoneNumber(e.target.value)}}/>
-                                            :<h4>{phoneNumber}</h4>
-                                        }
-                                    </div>
-                                    <div>
-                                        <h3>Email</h3>
-                                        <h4>{employee.email}</h4>
-                                    </div>
-                                </div>
-                            </form>
-                        }
-                    </div>
-                    <div className='profile-card'>
-                        <h1 onClick={() => {toggleDropdown('team')}} className="tag">Team info</h1>
-                        {
-                            isOpen == "team" &&
-                            <div className="team-details-tab">
-                                <div className='image-container'>
-                                    <img src='amalitech_logo.jpg'/>
-                                </div>
-                                <div className='team-details'>
-                                    <h3>Team Name: {employee.Department?.Team?.name}</h3>
-                                    <h4>Role in Team: {employee.Department?.Team?.role}</h4>
-                                    <h4>Team Lead: {employee.Department?.Team?.role}</h4>
-                                    <h4>Current Project: {employee.Department?.Team?.role}</h4>
-                                </div>
-                                <div className='contacts'>
-                                    <button>HR</button>
-                                    <button>Team Lead</button>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                    <div className='profile-card'>
-                        <h1 onClick={() => {toggleDropdown('skills')}} className="tag">Skills</h1>
-                        {
-                            isOpen == "skills" &&
-                            <div className="skills">
-                                <ul>
-                                    {employee.skills.map((skill, index) => (
-                                        <li key={index}>{skill}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        }
-                    </div>
-                    <div className='profile-card'>
-                        <h1 onClick={() => {toggleDropdown('job')}} className="tag">Work Schedule</h1>
-                        {
-                            isOpen == "job" &&
-                            <div className="work-schedule">
-                                {employee.WorkSchedule.map((schedule) => (
-                                    <p key={schedule.day}>
-                                        <span>{schedule.day}:</span> {schedule.type}
-                                    </p>
-                                ))}
-                            </div>
-                        }
-                    </div>
-                </>
-                :
-                <div className="profile-card">
-                    <h1 className='tag'>{error}</h1>
-                </div>
-            }
-        </div>
-    )
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Work Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {employee?.WorkSchedule.map((schedule, index) => (
+              <div key={index} className="text-center p-2 bg-muted rounded-md">
+                <div className="font-semibold">{schedule.day}</div>
+                <div className="text-sm text-muted-foreground">{schedule.type}</div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
-export default Profile
+export default function Component() {
+  const { id } = useParams<{ id: string }>();
+  const [employee, setEmployee] = useState<Employee | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchEmployee = async () => {
+      try {
+        let uri = ""
+        if(id){
+          uri = `http://localhost:3030/api/v1/employees/${id}`
+        }else{
+          uri = `http://localhost:3030/api/v1/employees/671541521bc9fe23dc8a3d79`
+        }
+        const response = await axios.get(uri);
+        if (response.data.employee) {
+          setEmployee(response.data.employee);
+        } else {
+          setError('Employee not found');
+        }
+      } catch (err) {
+        console.log(err)
+        setError('Failed to fetch employee details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployee();
+  }, [id]);
+
+  const handleEdit = async (updatedEmployee: Employee) => {
+    try {
+      await axios.patch(`http://localhost:3030/api/v1/employees/${id}`, updatedEmployee);
+      setEmployee(updatedEmployee);
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update employee details');
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center"></div>;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-65px)] bg-gray-100 text-gray-800">
+        <h1 className="text-6xl font-bold mb-4">404</h1>
+        <h2 className="text-2xl font-semibold mb-2">{error}</h2>
+        <p className="mb-4">We're sorry, but the employee you are looking for does not exist.</p>
+        <p>
+          Please check the ID or return to the{' '}
+          <Link to="/" className="text-blue-500 hover:underline">
+            homepage
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <EmployeeProfile isEditing={isEditing} employee={employee!} onEdit={() => setIsEditing(true)} />
+      {isEditing && (
+        <EditEmployeeModal
+          employee={employee!}
+          onClose={() => setIsEditing(false)}
+          onSave={handleEdit}
+        />
+      )}
+    </>
+  );
+}
