@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Employee from "@/model/Employee";
@@ -25,6 +25,7 @@ const Navbar: React.FC = () => {
   const [status, setStatus] = useState<string>('Loading...');
   const [currentUser, setCurrentUser] = useState<Employee|null>(null);
   const location = useLocation();
+  const navRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate()
 
   const navItems = [
@@ -39,7 +40,6 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        console.log("navbar")
         const response = await axios.get("http://localhost:3030/api/v1/employees/current",{
           headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
           withCredentials: true
@@ -62,6 +62,16 @@ const Navbar: React.FC = () => {
     localStorage.clear()
     navigate("/")
   }
+
+  useEffect(() => {
+    if(!isOpen)return
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("click", handleOutsideClick);
+  }, [navRef, isOpen])
 
   useEffect(() => {
     setIsOpen(false)
@@ -102,29 +112,14 @@ const Navbar: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="ml-3 relative">
-                    <Menu className="h-6 w-6" aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <div className="hidden md:block relative">
+            <div className='flex gap-[5px] items-center cursor-pointer' onClick={logout}>
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
             </div>
           </div>
           <div className="-mr-2 flex md:hidden">
-            <Button className="hover:bg-white" variant="ghost" onClick={() => setIsOpen(!isOpen)}>
+            <Button ref={navRef} className="hover:bg-white" variant="ghost" onClick={() => setIsOpen(!isOpen)}>
               <Menu className="h-6 w-6" aria-hidden="true" />
             </Button>
           </div>

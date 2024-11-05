@@ -8,10 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Plus, X } from 'lucide-react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const AddEmployeePage: React.FC = () => {
-  const [formData, setFormData] = useState<Employee>({
+  const formInitialState = {
     name: '',
     email: '',
     bio: '',
@@ -38,7 +38,8 @@ const AddEmployeePage: React.FC = () => {
       { day: 'Thursday', type: 'On-site' },
       { day: 'Friday', type: 'On-site' },
     ]
-  });
+  }
+  const [formData, setFormData] = useState<Employee>(formInitialState);
 
   const [newSkill, setNewSkill] = useState('');
 
@@ -119,37 +120,12 @@ const AddEmployeePage: React.FC = () => {
         });
   
         // Reset the form state
-        setFormData({
-          name: '',
-          email: '',
-          bio: '',
-          phoneNumber: '',
-          gender: '',
-          birthDate: new Date(),
-          skills: [],
-          Department: {
-            Role: {
-              position: '',
-              location: '',
-              startDate: new Date(),
-            },
-            Team: {
-              name: '',
-              role: '',
-              isLeader: false,
-            },
-          },
-          WorkSchedule: [
-            { day: 'Monday', type: 'On-site' },
-            { day: 'Tuesday', type: 'On-site' },
-            { day: 'Wednesday', type: 'On-site' },
-            { day: 'Thursday', type: 'On-site' },
-            { day: 'Friday', type: 'On-site' },
-          ]
-        });
+        setFormData(formInitialState);
+        alert("Employee added successfully")
       })
-      .catch(error => {
+      .catch((error: AxiosError) => {
         console.error("Error submitting form:", error);
+        alert("Failed to add employee, please make sure all fields are filled out correctly.")
         toast({
           title: "Error",
           description: "There was a problem adding the employee.",
@@ -175,7 +151,7 @@ const AddEmployeePage: React.FC = () => {
         </div>
         <div>
           <Label htmlFor="bio">Bio</Label>
-          <Textarea id="bio" name="bio" value={formData.bio} onChange={handleInputChange} />
+          <Textarea required id="bio" name="bio" value={formData.bio} onChange={handleInputChange} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -184,7 +160,7 @@ const AddEmployeePage: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="gender">Gender</Label>
-            <Select name="gender" value={formData.gender} onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as any)}>
+            <Select required name="gender" value={formData.gender} onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -200,6 +176,8 @@ const AddEmployeePage: React.FC = () => {
           <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
             <input
                 type="date"
+                required
+                max={new Date(new Date().getFullYear() - 15).toDateString()}
                 id="birthDate"
                 className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
                 onChange={(e) => {
@@ -210,7 +188,7 @@ const AddEmployeePage: React.FC = () => {
                 }));
               }}
             />
-        </div>
+          </div>
         </div>
         <div>
           <Label>Skills</Label>
@@ -244,11 +222,11 @@ const AddEmployeePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="position">Department Position</Label>
-            <Input id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
+            <Input required id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
           </div>
           <div>
             <Label htmlFor="location">Department Location</Label>
-            <Input id="location" name="location" value={formData.Department.Role.location} onChange={handleDepartmentChange} />
+            <Input required id="location" name="location" value={formData.Department.Role.location} onChange={handleDepartmentChange} />
           </div>
         </div>
         <div>
@@ -257,6 +235,7 @@ const AddEmployeePage: React.FC = () => {
                 <input
                     type='date'
                     id="startDate"
+                    required
                     className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
                     onChange={(e) => {
                     const selectedDate = new Date(e.target.value); // Convert string to Date
@@ -277,11 +256,11 @@ const AddEmployeePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="teamName">Team Name</Label>
-            <Input id="teamName" name="name" value={formData.Department.Team.name} onChange={handleTeamChange} />
+            <Input required id="teamName" name="name" value={formData.Department.Team.name} onChange={handleTeamChange} />
           </div>
           <div>
             <Label htmlFor="teamRole">Team Role</Label>
-            <Input id="teamRole" name="role" value={formData.Department.Team.role} onChange={handleTeamChange} />
+            <Input required id="teamRole" name="role" value={formData.Department.Team.role} onChange={handleTeamChange} />
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -301,6 +280,7 @@ const AddEmployeePage: React.FC = () => {
                 {schedule?.day}
               </div>
               <Select
+                required
                 value={schedule.type}
                 onValueChange={(value) => handleWorkScheduleChange(index, 'type', value)}
               >
@@ -316,7 +296,7 @@ const AddEmployeePage: React.FC = () => {
           ))}
         </div>
         <footer className="flex w-full justify-between gap-4 mt-5">
-          <Button className="w-full" type="button" variant="outline" onClick={() => setFormData({ ...formData })}>
+          <Button className="w-full" type="button" variant="outline" onClick={() => {scrollTo(0,0);setFormData(formInitialState)}}>
             Cancel
           </Button>
           <Button className="w-full" type="submit">Add Employee</Button>

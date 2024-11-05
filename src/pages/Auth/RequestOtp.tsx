@@ -1,5 +1,5 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 interface Props {
     handlePage: (path: string) => void
@@ -9,6 +9,11 @@ const RequestOtp: React.FC<Props> = ({handlePage}) => {
     const [email, setEmail] = useState<string>("")
     const [error, setError] = useState<string>("")
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const inputRef = useRef<HTMLInputElement|null>(null)
+
+    useEffect(() => {
+        inputRef.current?.focus()
+    })
 
     const submitEmail = () => {
         setIsLoading(true)
@@ -34,7 +39,7 @@ const RequestOtp: React.FC<Props> = ({handlePage}) => {
         <form onSubmit={(e) => {e.preventDefault();submitEmail()}} className='flex gap-[24px] flex-col'>
             <div className='flex flex-col gap-[16px]'>
                 <div className='py-[10px] border-b-[1px] border-b-[#d0d5dd]'>
-                    <input required value={email} onChange={(e) => {setEmail(e.target.value)}} className='w-full outline-none border-none text-[16px] leading-[24px] font-[400] text-[#667085]' type='email' placeholder='someone@amalitech.org'/>
+                    <input ref={inputRef} required value={email} onChange={(e) => {setEmail(e.target.value)}} className='w-full outline-none border-none text-[16px] leading-[24px] font-[400] text-[#667085]' type='email' placeholder='someone@amalitech.org'/>
                 </div>
                 <a href='mailto:admin@email.com' className='text-[#2e90fa] leading-[20px] text-[14px] font-[400]'>Can't access your account? Contact admin</a>
             </div>

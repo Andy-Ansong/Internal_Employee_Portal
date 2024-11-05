@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast"
 import { Plus, X } from 'lucide-react'
 import axios from 'axios';
+import { User } from '@/model/User'
 
 interface EditEmployeeModalProps {
   employee: Employee;
@@ -17,9 +18,22 @@ interface EditEmployeeModalProps {
 }
 
 const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose, onSave }) => {
+  const [image, setImage] = useState<string>("")
   const [formData, setFormData] = useState<Employee>(employee);
   const [newSkill, setNewSkill] = useState('');
+  const user: User|null = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null
+  const majorEdit = (user?.role === 'admin' || user?.role === 'hr') ? true : false
+  const minorEdit = user?._id == employee.userId ? true : false
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(!e.target.files)
+        return
+    const file = e.target.files[0]
+    if(file){
+        const imageUrl = URL.createObjectURL(file)
+        setImage(imageUrl)
+    }
+  }
   useEffect(() => {
     setFormData(employee);
   }, [employee]);
@@ -86,8 +100,28 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const submitImage = async () => {
+    if (image) {
+      const file = await convertUrlToFile(image, 'image', 'png')
+      const formData = new FormData();
+      formData.append('image', file);
+      await axios.post(`http://localhost:3030/image`, formData, {
+        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+        withCredentials: true
+      })
+    }
+  }
+  const convertUrlToFile = async (url: string, baseName: string, extension: string): Promise<File> => {
+    const response = await fetch(url)
+    const blob = await response.blob()
+    const fileName = `${baseName}_${100000 + Math.floor(Math.random() * 100000)}.${extension}`
+    return new File([blob], fileName, { type: blob.type })
+  }
+
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
+    await submitImage()
+
     const employeeId = formData._id;
     axios.patch(`http://localhost:3030/api/v1/employees/${employeeId}`, formData,{
         headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -121,25 +155,25 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
         </header>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
               <Label htmlFor="name">Name</Label>
               <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
             </div>
-            <div>
+            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
               <Label htmlFor="email">Email</Label>
               <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
             </div>
           </div>
-          <div>
+          <div className={!minorEdit ? "opacity-50 pointer-events-none" : ""}>
             <Label htmlFor="bio">Bio</Label>
             <Textarea id="bio" name="bio" value={formData.bio} onChange={handleInputChange} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
+            <div className={!minorEdit ? "opacity-50 pointer-events-none" : ""}>
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
             </div>
-            <div>
+            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
               <Label htmlFor="gender">Gender</Label>
               <Select name="gender" value={formData.gender}
                 onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as any)}>
@@ -153,18 +187,30 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               </Select>
             </div>
           </div>
-          <div>
-            <Label htmlFor="birthDate">Birth Date</Label>
-            <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
-                <input type="date"
-                id="birthDate"
-                value={new Date(formData.birthDate).toISOString().split('T')[0]}
-                className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
-                onChange={(e) => setFormData(prev => ({ ...prev, birthDate: new Date(e.target.value) }))}
-                />
+          {/* <div className="grid grid-cols-2 gap-4"> */}
+            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
+              <Label htmlFor="birthDate">Birth Date</Label>
+              <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
+                  <input type="date"
+                  id="birthDate"
+                  value={new Date(formData.birthDate).toISOString().split('T')[0]}
+                  className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
+                  onChange={(e) => setFormData(prev => ({ ...prev, birthDate: new Date(e.target.value) }))}
+                  />
+              </div>
             </div>
-          </div>
-          <div>
+            {/* <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
+              <Label htmlFor="birthDate">Profile Image</Label>
+              <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
+                  <input type="file"
+                  onChange={(e) => {handleFileChange(e)}}
+                  id="birthDate"
+                  className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
+                  />
+              </div>
+            </div>
+          </div> */}
+          <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label>Skills</Label>
             <div className="flex gap-2">
               <Input
@@ -176,7 +222,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div  className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} flex flex-wrap gap-2 mt-2`}>
               {formData.skills.map((skill, index) => (
                 <div key={index} className="cursor-default border hover:shadow rounded flex items-center bg-secondary text-secondary-foreground px-3 py-1">
                   {skill}
@@ -193,7 +239,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-4`}>
             <div>
               <Label htmlFor="position">Department Position</Label>
               <Input id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
@@ -203,7 +249,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               <Input id="location" name="location" value={formData.Department.Role.location} onChange={handleDepartmentChange} />
             </div>
           </div>
-          <div>
+          <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label htmlFor="startDate">Start Date</Label>
             <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
                 <input
@@ -224,7 +270,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
                 />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div  className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-4`}>
             <div>
               <Label htmlFor="teamName">Team Name</Label>
               <Input id="teamName" name="name" value={formData.Department.Team.name} onChange={handleTeamChange} />
@@ -234,7 +280,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               <Input id="teamRole" name="role" value={formData.Department.Team.role} onChange={handleTeamChange} />
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} flex items-center space-x-2`}>
             <Checkbox
               id="isLeader"
               name="isLeader"
@@ -243,7 +289,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
             />
             <Label htmlFor="isLeader">Is Team Leader</Label>
           </div>
-          <div>
+          <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label>Work Schedule</Label>
             {formData.WorkSchedule.map((schedule, index) => (
               <div key={index} className="flex gap-4 mt-2">

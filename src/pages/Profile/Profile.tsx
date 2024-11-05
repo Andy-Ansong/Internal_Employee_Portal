@@ -9,9 +9,16 @@ import { Mail, Phone, Cake, MapPin, Calendar, Users, Briefcase } from 'lucide-re
 import axios from 'axios';
 import { toast } from "@/components/ui/use-toast"
 import EditEmployeeModal from '../../components/Modals/EditEmployeeModal';
+import { User } from '@/model/User';
 
 const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: boolean }> = ({ employee, onEdit, isEditing }) => {
   const navigate = useNavigate()
+  const [user, setUser] = useState<User|null>(null)
+  const {id} = useParams<{ id: string }>()
+
+  useEffect(() => {
+    setUser(JSON.parse(localStorage.getItem('user') || ''))
+  }, [id])
 
   const handleDelete = () => {
     const confirm = window.confirm("Are you sure you want to delete this employee?")
@@ -59,12 +66,24 @@ const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: b
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">{employee?.bio}</p>
-              <button onClick={onEdit} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
-                Edit
-              </button>
-              <button onClick={handleDelete} className="mt-4 ml-3 bg-red-500 text-white px-4 py-2 rounded">
-                Delete
-              </button>
+              {
+                user?._id == employee?.userId
+                ?<button onClick={onEdit} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                  Edit
+                </button>
+                :user?.role === "admin" || user?.role === "hr"
+                  ?<button onClick={onEdit} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                  Edit
+                </button>
+                :<></>
+              }
+              {
+                id && (user?.role === "admin" || user?.role === "hr") && user?._id !== employee?.userId &&
+                <button onClick={handleDelete} className="mt-4 ml-3 bg-red-500 text-white px-4 py-2 rounded">
+                  Delete
+                </button>
+              }
+              
             </div>
           </div>
         </CardContent>

@@ -46,7 +46,7 @@ const Employees: React.FC = () => {
       setError(null);
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        navigate('/login');
+        navigate('/');
       } else {
         setError('Failed to fetch employees');
       }

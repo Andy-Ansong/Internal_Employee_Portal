@@ -23,10 +23,11 @@ const ProtectedRoute:React.FC<Props> = ({children}) => {
                     headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
                     withCredentials: true
                 })
-                .then((response:AxiosResponse) => {
+                .then((res:AxiosResponse) => {
                     console.log("Generating new token")
-                    const {accessToken} = response.data
+                    const {accessToken} = res.data
                     localStorage.setItem('token', accessToken)
+                    localStorage.setItem("user", JSON.stringify(res.data.user))
                     console.log("Set new access token")
                     token = localStorage.getItem('token') || ""
                     payload = JSON.parse(atob(token.split('.')[1]))

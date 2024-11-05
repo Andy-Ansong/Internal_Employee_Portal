@@ -18,19 +18,21 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 const localizer = momentLocalizer(moment);
 
 const Events: React.FC = () => {
+  const currentUser: User | null = JSON.parse(localStorage.getItem("user") || "");
+  const initialEventForm = {
+    title: '',
+    description: '',
+    receivers: '',
+    type: currentUser?.role === 'employee' ? 'Private' : 'Public',
+    start: new Date(),
+    end: new Date(),
+  }
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedReceivers, setSelectedReceivers] = useState<Array<User>>([])
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [formData, setFormData] = useState<Omit<Event, 'id'>>({
-    title: '',
-    description: '',
-    receivers: '',
-    type: 'Public',
-    start: new Date(),
-    end: new Date(),
-  });
+  const [formData, setFormData] = useState<Omit<Event, 'id'>>(initialEventForm);
   const [suggestions, setSuggestions] = useState<Array<User>>([]);
   const { toast } = useToast();
 
@@ -78,7 +80,7 @@ const Events: React.FC = () => {
     }
   };
 
-  const handleRemoveEmail = (user: string) => {
+  const handleRemoveEmail = (user: User) => {
     setSelectedReceivers(prev => prev.filter(e => e._id !== user._id));
   };
 
@@ -114,10 +116,7 @@ const Events: React.FC = () => {
     setSelectedEvent(null);
     setIsEditing(false);
     setFormData({
-      title: '',
-      description: '',
-      receivers: '',
-      type: 'Public',
+      ...initialEventForm,
       start,
       end,
     });
@@ -203,15 +202,9 @@ const Events: React.FC = () => {
         fetchEvents();
         setIsEditing(false);
         setSelectedEvent(null);
-        setFormData({
-            title: '',
-            description: '',
-            receivers: '',
-            type: 'Public',
-            start: new Date(),
-            end: new Date(),
-        });
+        setFormData(initialEventForm);
         setSelectedReceivers([])
+        scrollTo(0, 0);
     } catch (error) {
         console.error(error);
         toast({
@@ -235,14 +228,7 @@ const Events: React.FC = () => {
                     title: "Success",
                     description: "Event deleted successfully",
                 });
-                setFormData({
-                  title: '',
-                  description: '',
-                  receivers: '',
-                  type: 'Public',
-                  start: new Date(),
-                  end: new Date(),
-                });
+                setFormData(initialEventForm);
                 fetchEvents();
                 setSelectedEvent(null);
                 setIsEditing(false);
@@ -255,7 +241,7 @@ const Events: React.FC = () => {
                     variant: "destructive",
                 });
             } finally {
-                setIsLoading(false); // Ensure loading state is reset regardless of success or failure
+                setIsLoading(false);
             }
         }
     };
@@ -351,9 +337,14 @@ const Events: React.FC = () => {
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Public">Public</SelectItem>
+                    {
+                      currentUser?.role !== "employee" &&
+                      <>
+                        <SelectItem value="Public">Public</SelectItem>
+                        <SelectItem value="Holiday">Holiday</SelectItem>
+                      </>
+                    }
                     <SelectItem value="Private">Private</SelectItem>
-                    <SelectItem value="Holiday">Holiday</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
