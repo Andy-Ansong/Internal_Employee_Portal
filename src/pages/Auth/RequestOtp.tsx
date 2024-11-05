@@ -12,7 +12,7 @@ const RequestOtp: React.FC<Props> = ({handlePage}) => {
 
     const submitEmail = () => {
         setIsLoading(true)
-        axios.post('http://localhost:3030/api/v1/auth/request', {email: email})
+        axios.post('http://localhost:3030/api/v1/auth/request', {email: email}, {withCredentials:true})
         .then((res) => {
             handlePage("login")
             console.log(res)

@@ -41,7 +41,7 @@ const Login: React.FC = () => {
                 }
                 {
                     isLoading?
-                    <div className="h-[38px] w-[75.5px] border-[1px] border-[#06aed4] hover:shadow px-[14px] py-[8px] bg-[#2e90fa]">
+                    <div className="h-[38px] items-center justify-center w-[75.5px] border-[1px] border-[#06aed4] hover:shadow px-[14px] py-[8px] bg-[#2e90fa]">
                         <div className="w-4 h-4 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>:
                     <button type='submit' onClick={submitOtp} className="h-[38px] w-[75.5px] border-[1px] border-[#06aed4] hover:shadow px-[14px] py-[8px] bg-[#2e90fa]">

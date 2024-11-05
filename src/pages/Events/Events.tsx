@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import { Event } from '@/model/Event';
+import { User } from '@/model/User';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -20,6 +21,7 @@ const Events: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedReceivers, setSelectedReceivers] = useState<Array<User>>([])
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<Omit<Event, 'id'>>({
     title: '',
@@ -29,7 +31,7 @@ const Events: React.FC = () => {
     start: new Date(),
     end: new Date(),
   });
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Array<User>>([]);
   const { toast } = useToast();
 
   const handleReceiversChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,9 +45,8 @@ const Events: React.FC = () => {
           headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
           withCredentials: true
       })
-        const emails = response.data.users.map((user: { email: string }) => user.email); // Extract emails
-        console.log(response.data)
-        setSuggestions(emails ?? []);
+        const users = response.data.users
+        setSuggestions(users ?? []);
       } catch (error) {
         console.error(error);
         toast({
@@ -59,9 +60,26 @@ const Events: React.FC = () => {
     }
   };
 
-  const handleSelectSuggestion = (email: string) => {
-    setFormData(prev => ({ ...prev, receivers: email }));
+  const handleSelectSuggestion = (receiver: User) => {
+    if (!selectedReceivers.some(selected => selected._id === receiver._id)) {
+      setSelectedReceivers(prev => [...prev, receiver]);
+    }
+    setFormData(prev => ({ ...prev, receivers: '' }))
     setSuggestions([]);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const match = suggestions.find(user => user._id === formData.receivers);
+      if (match) {
+        handleSelectSuggestion(match);
+      }
+    }
+  };
+
+  const handleRemoveEmail = (user: string) => {
+    setSelectedReceivers(prev => prev.filter(e => e._id !== user._id));
   };
 
   useEffect(() => {
@@ -103,19 +121,22 @@ const Events: React.FC = () => {
       start,
       end,
     });
+    setSelectedReceivers([])
   };
 
   const handleSelectEvent = (event: Event) => {
     setSelectedEvent(event);
+    console.log(event)
     setIsEditing(true);
     setFormData({
       title: event.title,
       description: event.description,
-      receivers: event.receivers,
+      receivers: "",
       type: event.type,
       start: event.start,
       end: event.end,
     });
+    setSelectedReceivers(event.receivers)
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -132,22 +153,21 @@ const Events: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     const now = new Date();
 
     if (formData.start < now) {
-      alert("Event cannot be in the past")
-      toast({
-          title: "Error",
-          description: "Start date cannot be in the past.",
-          variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
+        alert("Event cannot be in the past");
+        toast({
+            title: "Error",
+            description: "Start date cannot be in the past.",
+            variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
     }
 
     if (formData.end <= formData.start) {
-      alert("End date must be after the start date")
+        alert("End date must be after the start date");
         toast({
             title: "Error",
             description: "End date must be after the start date.",
@@ -156,22 +176,25 @@ const Events: React.FC = () => {
         setIsLoading(false);
         return;
     }
-
+    const eventData = {
+        ...formData,
+        receivers: selectedReceivers.map(receiver => receiver._id),
+    };
     try {
         if (isEditing && selectedEvent) {
-            await axios.patch(`http://localhost:3030/api/v1/events/${selectedEvent._id}`, formData,{
-              headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
-              withCredentials: true
-          })
+            await axios.patch(`http://localhost:3030/api/v1/events/${selectedEvent._id}`, eventData, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                withCredentials: true,
+            });
             toast({
                 title: "Success",
                 description: "Event updated successfully",
             });
         } else {
-            await axios.post('http://localhost:3030/api/v1/events', formData,{
-              headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
-              withCredentials: true
-          })
+            await axios.post('http://localhost:3030/api/v1/events', eventData, { // Use eventData instead of formData
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                withCredentials: true,
+            });
             toast({
                 title: "Success",
                 description: "Event added successfully",
@@ -188,6 +211,7 @@ const Events: React.FC = () => {
             start: new Date(),
             end: new Date(),
         });
+        setSelectedReceivers([])
     } catch (error) {
         console.error(error);
         toast({
@@ -197,8 +221,7 @@ const Events: React.FC = () => {
         });
     }
     setIsLoading(false);
-};
-
+  };
 
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this event?')) {
@@ -211,6 +234,14 @@ const Events: React.FC = () => {
                 toast({
                     title: "Success",
                     description: "Event deleted successfully",
+                });
+                setFormData({
+                  title: '',
+                  description: '',
+                  receivers: '',
+                  type: 'Public',
+                  start: new Date(),
+                  end: new Date(),
                 });
                 fetchEvents();
                 setSelectedEvent(null);
@@ -284,21 +315,33 @@ const Events: React.FC = () => {
                   name="receivers"
                   value={formData.receivers}
                   onChange={handleReceiversChange}
-                  required
+                  onKeyDown={handleKeyDown}
                 />
                 {suggestions.length > 0 && (
                   <div className='border border-[#d0d0d0]'>
                     {isLoading && <div>Loading...</div>}
                     {suggestions.length > 0 && (
                       <ul className="flex gap-[1px] flex-wrap">
-                        {suggestions.map((email, index) => (
-                          <li className='w-full px-[5px] cursor-pointer hover:border hover:shadow border-[#d0d0d0]' key={index} onClick={() => handleSelectSuggestion(email)}>
-                            {email}
+                        {suggestions.map((user, index) => (
+                          <li className='w-full px-[5px] cursor-pointer hover:border hover:shadow border-[#d0d0d0]' key={index} onClick={() => handleSelectSuggestion(user)}>
+                            {user.email}
                           </li>
                         ))}
                       </ul>
                     )}
                   </div>
+                )}
+                {selectedReceivers.length > 0 && (
+                  <ul className="mt-2">
+                    {selectedReceivers.map((user, index) => (
+                      <li key={index}
+                        onClick={() => handleRemoveEmail(user)}
+                        className="py-1 px-2 bg-gray-100 flex items-center justify-between cursor-pointer rounded-md my-1">
+                        <p>{user.email}</p>
+                        <div>×</div>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <div>

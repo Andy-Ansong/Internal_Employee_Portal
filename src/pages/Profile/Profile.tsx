@@ -157,7 +157,7 @@ export default function Component() {
         if(id){
           uri = `http://localhost:3030/api/v1/employees/${id}`
         }else{
-          uri = `http://localhost:3030/api/v1/employees/671541521bc9fe23dc8a3d79`
+          uri = `http://localhost:3030/api/v1/employees/current`
         }
         const response = await axios.get(uri,{
           headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },

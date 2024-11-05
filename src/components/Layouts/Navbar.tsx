@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Employee from "@/model/Employee";
 import {
@@ -25,6 +25,7 @@ const Navbar: React.FC = () => {
   const [status, setStatus] = useState<string>('Loading...');
   const [currentUser, setCurrentUser] = useState<Employee|null>(null);
   const location = useLocation();
+  const navigate = useNavigate()
 
   const navItems = [
     { name: 'Profile', to: '/profile', icon: User },
@@ -38,6 +39,7 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
+        console.log("navbar")
         const response = await axios.get("http://localhost:3030/api/v1/employees/current",{
           headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
           withCredentials: true
@@ -51,6 +53,15 @@ const Navbar: React.FC = () => {
     };
     fetchCurrentUser();
   }, []);
+
+  const logout = () => {
+    axios.post("http://localhost:3030/api/v1/logout", {
+      headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+      withCredentials: true
+    })
+    localStorage.clear()
+    navigate("/")
+  }
 
   useEffect(() => {
     setIsOpen(false)
@@ -104,7 +115,7 @@ const Navbar: React.FC = () => {
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
@@ -140,7 +151,7 @@ const Navbar: React.FC = () => {
           </div>
           <div className="pb-3 border-t border-muted">
             <div className="mt-3 px-2 space-y-1">
-              <Button variant="ghost" className="hover:bg-white hover:shadow-none block w-full text-left px-3 py-2">
+              <Button onClick={logout} variant="ghost" className="hover:bg-white hover:shadow-none block w-full text-left px-3 py-2">
                 <LogOut className="inline-block w-4 h-4 mr-2" />
                   Logout
               </Button>
