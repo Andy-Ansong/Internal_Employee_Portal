@@ -2,17 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Employee from "@/model/Employee";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import UserModel from "@/model/User";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Calendar, 
   Users, 
-  Settings, 
   LogOut, 
   Menu,
   User,
@@ -25,15 +19,20 @@ const Navbar: React.FC = () => {
   const [status, setStatus] = useState<string>('Loading...');
   const [currentUser, setCurrentUser] = useState<Employee|null>(null);
   const location = useLocation();
+  const user: User|null = JSON.parse(localStorage.getItem("user") || "{}");
   const navRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate()
 
-  const navItems = [
+  const items = [
     { name: 'Profile', to: '/profile', icon: User },
     { name: 'Events', to: '/events', icon: Calendar },
     { name: 'Employees', to: '/employees', icon: Users },
     { name: 'Add Employee', to: '/addEmployee', icon: UserPlus },
   ];
+
+  const navItems = (user.role == "admin" || user.role == "hr")
+  ? [...items, { name: 'Add Employee', to: '/addEmployee', icon: UserPlus }]
+  : [...items];
 
   const isActive = (pathname: string) => location.pathname === pathname;
 
