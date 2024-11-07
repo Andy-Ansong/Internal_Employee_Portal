@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { Plus, X } from 'lucide-react'
@@ -18,22 +17,12 @@ interface EditEmployeeModalProps {
 }
 
 const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose, onSave }) => {
-  const [image, setImage] = useState<string>("")
   const [formData, setFormData] = useState<Employee>(employee);
   const [newSkill, setNewSkill] = useState('');
   const user: User|null = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null
   const majorEdit = (user?.role === 'admin' || user?.role === 'hr') ? true : false
   const minorEdit = user?._id == employee.userId ? true : false
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(!e.target.files)
-        return
-    const file = e.target.files[0]
-    if(file){
-        const imageUrl = URL.createObjectURL(file)
-        setImage(imageUrl)
-    }
-  }
   useEffect(() => {
     setFormData(employee);
   }, [employee]);
@@ -59,6 +48,19 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
       }
     }));
   };
+
+  const handleLocationChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      Department: {
+        ...prev.Department,
+        Role: {
+          ...prev.Department.Role,
+          location: value
+        }
+      }
+    }))
+  }
 
   const handleTeamChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -100,27 +102,8 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
     }));
   };
 
-  const submitImage = async () => {
-    if (image) {
-      const file = await convertUrlToFile(image, 'image', 'png')
-      const formData = new FormData();
-      formData.append('image', file);
-      await axios.post(`http://localhost:3030/image`, formData, {
-        headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
-        withCredentials: true
-      })
-    }
-  }
-  const convertUrlToFile = async (url: string, baseName: string, extension: string): Promise<File> => {
-    const response = await fetch(url)
-    const blob = await response.blob()
-    const fileName = `${baseName}_${100000 + Math.floor(Math.random() * 100000)}.${extension}`
-    return new File([blob], fileName, { type: blob.type })
-  }
-
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    await submitImage()
 
     const employeeId = formData._id;
     axios.patch(`http://localhost:3030/api/v1/employees/${employeeId}`, formData,{
@@ -173,10 +156,10 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} />
             </div>
-            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
+            <div className={"opacity-50 pointer-events-none"}>
               <Label htmlFor="gender">Gender</Label>
               <Select name="gender" value={formData.gender}
-                onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as any)}>
+                onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as React.ChangeEvent<HTMLSelectElement>)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -187,8 +170,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               </Select>
             </div>
           </div>
-          {/* <div className="grid grid-cols-2 gap-4"> */}
-            <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
+            <div className={"opacity-50 pointer-events-none"}>
               <Label htmlFor="birthDate">Birth Date</Label>
               <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
                   <input type="date"
@@ -199,17 +181,6 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
                   />
               </div>
             </div>
-            {/* <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
-              <Label htmlFor="birthDate">Profile Image</Label>
-              <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
-                  <input type="file"
-                  onChange={(e) => {handleFileChange(e)}}
-                  id="birthDate"
-                  className='outline-none w-full rounded-lg px-[14px] py-[7px] leading-[20px] font-normal text-[14px]'
-                  />
-              </div>
-            </div>
-          </div> */}
           <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label>Skills</Label>
             <div className="flex gap-2">
@@ -239,16 +210,6 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               ))}
             </div>
           </div>
-          <div className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-4`}>
-            <div>
-              <Label htmlFor="position">Department Position</Label>
-              <Input id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
-            </div>
-            <div>
-              <Label htmlFor="location">Department Location</Label>
-              <Input id="location" name="location" value={formData.Department.Role.location} onChange={handleDepartmentChange} />
-            </div>
-          </div>
           <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label htmlFor="startDate">Start Date</Label>
             <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
@@ -273,21 +234,65 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
           <div  className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-4`}>
             <div>
               <Label htmlFor="teamName">Team Name</Label>
-              <Input id="teamName" name="name" value={formData.Department.Team.name} onChange={handleTeamChange} />
+              <Select
+                name="name"
+                value={formData.Department.Team.name}
+                onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Team" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Development">Development</SelectItem>
+                  <SelectItem value="Creative">Creative</SelectItem>
+                  <SelectItem value="Finance">Finance</SelectItem>
+                  <SelectItem value="Consulting">Consulting</SelectItem>
+                  <SelectItem value="Operations">Operations</SelectItem>
+                  <SelectItem value="Human Resource">Human Resource</SelectItem>
+                  <SelectItem value="Customer Support">Customer Support</SelectItem>
+                  <SelectItem value="Marketing">Marketing</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="teamRole">Team Role</Label>
-              <Input id="teamRole" name="role" value={formData.Department.Team.role} onChange={handleTeamChange} />
+              <Select
+              name="name"
+              value={formData.Department.Team.name}
+              onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Lead">Lead</SelectItem>
+                <SelectItem value="Member">Member</SelectItem>
+              </SelectContent>
+            </Select>
             </div>
           </div>
-          <div className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} flex items-center space-x-2`}>
-            <Checkbox
-              id="isLeader"
-              name="isLeader"
-              checked={formData.Department.Team.isLeader}
-              onCheckedChange={(checked: boolean) => handleTeamChange({ target: { name: 'isLeader', checked } } as any)}
-            />
-            <Label htmlFor="isLeader">Is Team Leader</Label>
+          <div className={`${majorEdit ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-4`}>
+            <div>
+              <Label htmlFor="position">Department Position</Label>
+              <Input id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
+            </div>
+            <div>
+              <Label htmlFor="location">Department Location</Label>
+                <Select
+                  name="location"
+                  value={formData.Department.Role.location}
+                  onValueChange={(value) => handleLocationChange(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Accra">Accra</SelectItem>
+                    <SelectItem value="Takoradi">Takoradi</SelectItem>
+                    <SelectItem value="Kumasi">Kumasi</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
           </div>
           <div className={majorEdit ? "" : "opacity-50 pointer-events-none"}>
             <Label>Work Schedule</Label>

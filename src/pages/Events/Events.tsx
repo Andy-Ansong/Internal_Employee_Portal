@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast, useToast } from "@/components/ui/use-toast"
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react'
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { endOfDay } from 'date-fns';
 
 // Setup the localizer for react-big-calendar
 const localizer = momentLocalizer(moment);
@@ -24,21 +25,21 @@ const Events: React.FC = () => {
     description: '',
     receivers: '',
     type: currentUser?.role === 'employee' ? 'Private' : 'Public',
-    start: new Date(),
-    end: new Date(),
+    start: "",
+    end: "",
   }
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedReceivers, setSelectedReceivers] = useState<Array<User>>([])
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [slotDate, setSlotDate] = useState(new Date())
   const [formData, setFormData] = useState<Omit<Event, 'id'>>(initialEventForm);
   const [suggestions, setSuggestions] = useState<Array<User>>([]);
   const { toast } = useToast();
 
   const handleReceiversChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log("called")
     setFormData(prev => ({ ...prev, [name]: value }));
 
     if (name === 'receivers' && value) {
@@ -95,7 +96,7 @@ const Events: React.FC = () => {
         headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
         withCredentials: true
     })
-      const formattedEvents = response.data.events.map((event: any) => ({
+      const formattedEvents = response.data.events.map((event: Event) => ({
         ...event,
         start: new Date(event.start),
         end: new Date(event.end),
@@ -115,6 +116,7 @@ const Events: React.FC = () => {
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     setSelectedEvent(null);
     setIsEditing(false);
+    setSlotDate(start)
     setFormData({
       ...initialEventForm,
       start,
@@ -125,8 +127,8 @@ const Events: React.FC = () => {
 
   const handleSelectEvent = (event: Event) => {
     setSelectedEvent(event);
-    console.log(event)
     setIsEditing(true);
+    setSlotDate(event.start)
     setFormData({
       title: event.title,
       description: event.description,
@@ -177,6 +179,7 @@ const Events: React.FC = () => {
     }
     const eventData = {
         ...formData,
+        eventType: formData.type,
         receivers: selectedReceivers.map(receiver => receiver._id),
     };
     try {
@@ -204,9 +207,11 @@ const Events: React.FC = () => {
         setSelectedEvent(null);
         setFormData(initialEventForm);
         setSelectedReceivers([])
+        alert("Event added successfully")
         scrollTo(0, 0);
     } catch (error) {
         console.error(error);
+        alert("Failed to add event, please make sure all fields are filled out correctly.")
         toast({
             title: "Error",
             description: `Failed to ${isEditing ? 'update' : 'add'} event`,
@@ -268,7 +273,7 @@ const Events: React.FC = () => {
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className={new Date() > slotDate ? `opacity-50 pointer-events-none` : ""}>
           <CardHeader>
             <CardTitle>{isEditing ? 'Edit Event' : 'Add Event'}</CardTitle>
           </CardHeader>

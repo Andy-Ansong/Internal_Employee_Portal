@@ -27,7 +27,6 @@ const Navbar: React.FC = () => {
     { name: 'Profile', to: '/profile', icon: User },
     { name: 'Events', to: '/events', icon: Calendar },
     { name: 'Employees', to: '/employees', icon: Users },
-    { name: 'Add Employee', to: '/addEmployee', icon: UserPlus },
   ];
 
   const navItems = (user.role == "admin" || user.role == "hr")

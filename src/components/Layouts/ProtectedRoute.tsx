@@ -43,6 +43,7 @@ const ProtectedRoute:React.FC<Props> = ({children}) => {
                     setShow(true)
                 })
             }
+            setShow(true)
         }
 
         if(!token)

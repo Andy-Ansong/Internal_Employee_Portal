@@ -34,7 +34,7 @@ const Login: React.FC = () => {
             <img className='w-[123.64px] h-[35.39px]' src='/amalitech_logo.jpg'/>
         </div>
         <div className='flex flex-col gap-[8px]'>
-            <h1 className='text-[#101828] leading-[32px] text-[24px] font-[600]'>Enter received code</h1>
+            <h1 className='text-[#101828] leading-[32px] text-[20px] font-[600]'>Enter received code</h1>
         </div>
         <form onSubmit={(e) => {e.preventDefault();submitOtp()}} className='flex gap-[24px] flex-col'>
             <div className='flex flex-col gap-[16px]'>

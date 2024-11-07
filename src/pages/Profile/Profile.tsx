@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Employee } from "@/model/Employee";
-import { Mail, Phone, Cake, MapPin, Calendar, Users, Briefcase } from 'lucide-react';
+import { Mail, Phone, Cake, MapPin, Calendar, Users, Briefcase, Network } from 'lucide-react';
 import axios from 'axios';
 import { toast } from "@/components/ui/use-toast"
 import EditEmployeeModal from '../../components/Modals/EditEmployeeModal';
@@ -65,7 +65,7 @@ const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: b
                   <Badge key={index} variant="secondary">{skill}</Badge>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground">{employee?.bio}</p>
+              <p className="text-sm md:w-[400px] text-muted-foreground">{employee?.bio}</p>
               {
                 user?._id == employee?.userId
                 ?<button onClick={onEdit} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
@@ -135,8 +135,8 @@ const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: b
                 <span>Team: {employee?.Department?.Team?.name}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span>Team Role: {employee?.Department?.Team?.role}</span>
-                {employee?.Department?.Team?.isLeader && <Badge>Team Leader</Badge>}
+                <Network className="text-muted-foreground" />
+                <span>Role: {employee?.Department?.Team?.role}</span>
               </div>
             </div>
           </CardContent>
@@ -148,7 +148,7 @@ const EmployeeProfile: FC<{ employee: Employee; onEdit: () => void, isEditing: b
           <CardTitle>Work Schedule</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="flex flex-wrap justify-between gap-4">
             {employee?.WorkSchedule.map((schedule, index) => (
               <div key={index} className="text-center p-2 bg-muted rounded-md">
                 <div className="font-semibold">{schedule.day}</div>

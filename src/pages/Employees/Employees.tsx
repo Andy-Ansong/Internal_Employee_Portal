@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import Employee from "@/model/Employee"
+import Employee from "../../model/Employee"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Plus, Search } from 'lucide-react'
 
 interface User {
   role: string;
@@ -18,6 +18,8 @@ const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [search, setSearch] = useState<string>("");
+  const [sort, setSort] = useState<string>(localStorage.getItem("sortOrder") ?? "name");
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
@@ -32,12 +34,12 @@ const Employees: React.FC = () => {
     scrollTo(0,0)
     fetchEmployees();
     fetchUserInfo();
-  }, [currentPage]);
+  }, [currentPage, search, sort]);
 
   const fetchEmployees = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`http://localhost:3030/api/v1/employees?page=${currentPage}&limit=10`,{
+      const response = await axios.get(`http://localhost:3030/api/v1/employees?page=${currentPage}&limit=10&name=${search}&sort=${sort}`,{
         headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
         withCredentials: true
       })
@@ -84,7 +86,7 @@ const Employees: React.FC = () => {
       const token = localStorage.getItem('token');
       if (isEditMode && currentEmployee) {
         await axios.put(`http://localhost:3030/api/v1/employees/${currentEmployee._id}`, employeeData,{
-          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers:{ Authorization: `Bearer ${token}` },
           withCredentials: true
       })
         toast({
@@ -93,7 +95,7 @@ const Employees: React.FC = () => {
         });
       } else {
         await axios.post('http://localhost:3030/api/v1/employees', employeeData,{
-          headers:{ Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers:{ Authorization: `Bearer ${token}` },
           withCredentials: true
         })
         toast({
@@ -144,15 +146,16 @@ const Employees: React.FC = () => {
     </Card>
   );
 
+
   const EmployeeListItem: React.FC<{ employee: Employee }> = ({ employee }) => (
     <Card className="mb-4">
       <CardContent className="grid h-[60px] grid-cols-[50px,repeat(3,1fr),1fr,auto] py-[5px] gap-[10px] items-center">
         <div className="w-[50px] h-[50px] rounded-[50%] overflow-hidden">
           <img src={employee.image} alt={employee.name} className="w-full h-full object-cover"/>
         </div>
-        <h3 className="text-lg font-semibold text-ellipsis overflow-hidden line-clamp-1">{employee.name}</h3>
-        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1">{employee.email}</p>
-        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1 hidden md:block">{employee.phoneNumber}</p>
+        <h3 className="text-lg font-semibold text-ellipsis overflow-hidden">{employee.name}</h3>
+        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden">{employee.email}</p>
+        <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden hidden md:block">{employee.phoneNumber}</p>
         <p className="text-sm text-muted-foreground text-ellipsis overflow-hidden line-clamp-1">Role: {employee.Department.Role.position}</p>
         <div>
         <div className="cursor-pointer shadow rounded border py-[5px] px-[5px] flex items-center justify-center" onClick={() => navigate(`/employees/${employee._id}`)}>
@@ -187,8 +190,31 @@ const Employees: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Employee Management</h1>
-      <p className="mb-4">Total Employees: {totalCount}</p>
+      <div className='flex justify-between items-center'>
+      <h1 className="text-2xl font-bold mb-4">Employees</h1>
+        <div className="flex items-center w-full max-w-sm space-x-2 rounded-lg border border-gray-300 bg-gray-50 dark:bg-gray-900 px-3.5 py-1">
+          <Search className="h-4 w-4" />
+          <Input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search" className="w-full border-0 h-8 font-semibold" />
+        </div>
+      </div>
+
+      <div className='flex justify-between items-center mb-4'>
+        <p className="mb-4">Total Employees: {totalCount}</p>
+        <div className='bg-white'>
+        <Select required name="sort" defaultValue="name" value={sort} onValueChange={(value) => {localStorage.setItem("sortOrder", sort);setSort(value)}}>
+          <SelectTrigger>
+            <SelectValue placeholder="Sort by Name" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name A-Z</SelectItem>
+            <SelectItem value="-name">Name Z-A</SelectItem>
+            <SelectItem value="-Department.Role.startDate">Latest</SelectItem>
+            <SelectItem value="Department.Role.startDate">Oldest</SelectItem>
+          </SelectContent>
+        </Select>
+        </div>
+      </div>
+      
       
       {(user?.role === 'admin' || user?.role === 'hr') && (
         <Button onClick={handleAddEmployee} className="mb-4">

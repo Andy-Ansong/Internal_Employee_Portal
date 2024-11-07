@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Plus, X } from 'lucide-react';
@@ -64,6 +63,19 @@ const AddEmployeePage: React.FC = () => {
       }
     }));
   };
+
+  const handleLocationChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      Department: {
+        ...prev.Department,
+        Role: {
+          ...prev.Department.Role,
+          location: value
+        }
+      }
+    }))
+  }
 
   const handleTeamChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -160,7 +172,7 @@ const AddEmployeePage: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="gender">Gender</Label>
-            <Select required name="gender" value={formData.gender} onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as any)}>
+            <Select required name="gender" value={formData.gender} onValueChange={(value) => handleInputChange({ target: { name: 'gender', value } } as React.ChangeEvent<HTMLSelectElement>)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -219,16 +231,6 @@ const AddEmployeePage: React.FC = () => {
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="position">Department Position</Label>
-            <Input required id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
-          </div>
-          <div>
-            <Label htmlFor="location">Department Location</Label>
-            <Input required id="location" name="location" value={formData.Department.Role.location} onChange={handleDepartmentChange} />
-          </div>
-        </div>
         <div>
             <Label htmlFor="startDate">Start Date</Label>
             <div className="w-full flex border-[1px] border-[rgb(224,226,228)] rounded">
@@ -256,21 +258,65 @@ const AddEmployeePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="teamName">Team Name</Label>
-            <Input required id="teamName" name="name" value={formData.Department.Team.name} onChange={handleTeamChange} />
+            <Select
+              name="name"
+              value={formData.Department.Team.name}
+              onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Consulting">Consulting</SelectItem>
+                <SelectItem value="Creative">Creative</SelectItem>
+                <SelectItem value="Customer Support">Customer Support</SelectItem>
+                <SelectItem value="Development">Development</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Human Resource">Human Resource</SelectItem>
+                <SelectItem value="Marketing">Marketing</SelectItem>
+                <SelectItem value="Operations">Operations</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="teamRole">Team Role</Label>
-            <Input required id="teamRole" name="role" value={formData.Department.Team.role} onChange={handleTeamChange} />
+            <Select
+              name="role"
+              value={formData.Department.Team.name}
+              onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Lead">Lead</SelectItem>
+                <SelectItem value="Member">Member</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isLeader"
-            name="isLeader"
-            checked={formData.Department.Team.isLeader}
-            onCheckedChange={(checked: boolean) => handleTeamChange({ target: { name: 'isLeader', checked } } as any)}
-          />
-          <Label htmlFor="isLeader">Is Team Leader</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="position">Department Position</Label>
+            <Input required id="position" name="position" value={formData.Department.Role.position} onChange={handleDepartmentChange} />
+          </div>
+          <div>
+            <Label htmlFor="location">Department Location</Label>
+            <Select
+              name="location"
+              value={formData.Department.Role.location}
+              onValueChange={(value) => handleLocationChange(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Accra">Accra</SelectItem>
+                <SelectItem value="Takoradi">Takoradi</SelectItem>
+                <SelectItem value="Kumasi">Kumasi</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div>
           <Label>Work Schedule</Label>
