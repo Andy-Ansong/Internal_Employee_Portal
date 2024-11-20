@@ -64,6 +64,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
 
   const handleTeamChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    console.log('changing team name: ' + value)
     setFormData(prev => ({
       ...prev,
       Department: {
@@ -237,7 +238,7 @@ const EditEmployeeModal: React.FC<EditEmployeeModalProps> = ({ employee, onClose
               <Select
                 name="name"
                 value={formData.Department.Team.name}
-                onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                onValueChange={(value) => handleTeamChange({ target: { name: 'name', value } } as React.ChangeEvent<HTMLSelectElement>)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Team" />
